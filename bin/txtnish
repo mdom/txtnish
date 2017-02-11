@@ -15,7 +15,7 @@ create_dir () {
 
 update () {
 	create_dir ~/.cache/txtnish/
-	urls | xargs -n2 -P8 wget --timestamping -P ~/.cache/txtnish/ -x -q
+	urls | xargs -n1 -P20 wget --timestamping -P ~/.cache/txtnish/ -x -q
 }
 
 urls () {
