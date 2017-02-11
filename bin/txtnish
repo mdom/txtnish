@@ -1,0 +1,98 @@
+#!/bin/sh
+
+TAB="	"
+limit=20
+formatter="fmt"
+
+die () {
+	printf "$0: %s\n" "$1"
+	exit "${2:-1}"
+}
+
+create_dir () {
+	[ -d "$1" ] || mkdir -p "$1"
+}
+
+update () {
+	create_dir ~/.cache/txtnish/
+	urls | xargs -n2 -P8 wget --timestamping -P ~/.cache/txtnish/ -x -q
+}
+
+urls () {
+	[ -f ~/.config/txtnish/following ] || return
+	## i'm not using awk here as the number of urls is usually pretty short.
+	while read _ url;do
+		printf "%s\n" "$url"
+	done < ~/.config/txtnish/following
+}
+
+format_msg () {
+	while read _ _ nick url ts msg;do
+		printf "* %s (%s)\n" "$nick" "$ts"
+		if type "$formatter" >/dev/null 2>&1;then
+			printf "%s\n" "$msg" | $formatter
+		else
+			printf "%s\n" "$msg"
+		fi
+		printf "\n"
+	done
+}
+
+normalize_time () {
+	awk -vnick="$1" -vurl="$2" -F"$TAB" '
+		$1 && $2 {
+			sub(/Z$/,"+00:00",$1)
+			match($1,/\.[0-9]+/)
+			if ( RSTART ) {
+				secfrac=substr($1,RSTART,RLENGTH)
+				fracless=$1
+				sub(/\.[0-9]+/,"",fracless)
+			}
+			else {
+				fracless=$1
+				secfrac=0
+			}
+			OFS="	"
+			print fracless, secfrac, nick, url, $1, $2
+		}	
+	'
+}
+
+limit () {
+	if [ -n "$limit" ];then
+		sed "${limit}q"
+	else
+		cat
+	fi
+}
+
+sort_tweets () {
+	# TODO timezones are not sorted in the right order!
+	sort -r -k1,1 -k2,2
+}
+
+timeline () {
+	update;
+	while read nick url;do
+		twtfile=~/.cache/txtnish/${url#*://}
+		twtfile=${twtfile%%#*}
+		if [ -d "$twtfile" ] && [ -e "$twtfile/index.html" ];then
+			twtfile="$twtfile/index.html"
+		fi
+		[ -e "$twtfile" ] || continue
+
+	       	normalize_time "$nick" "$url" < "$twtfile"
+	done < ~/.config/txtnish/following | sort_tweets | limit | format_msg
+}
+
+
+mode=$1
+shift
+
+case $mode in
+	update ) update ;;
+	timeline ) timeline ;;
+	* ) die "Unknown mode $mode." ;;
+esac
+
+exit 0
