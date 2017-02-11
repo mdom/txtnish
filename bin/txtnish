@@ -39,21 +39,21 @@ format_msg () {
 }
 
 normalize_time () {
-	awk -vnick="$1" -vurl="$2" -F"$TAB" '
-		$1 && $2 {
-			sub(/Z$/,"+00:00",$1)
-			match($1,/\.[0-9]+/)
+	awk -F"$TAB" '
+		$3 && $4 {
+			sub(/Z$/,"+00:00",$3)
+			match($3,/\.[0-9]+/)
 			if ( RSTART ) {
-				secfrac=substr($1,RSTART,RLENGTH)
-				fracless=$1
+				secfrac=substr($3,RSTART+1,RLENGTH-1)
+				fracless=$3
 				sub(/\.[0-9]+/,"",fracless)
 			}
 			else {
-				fracless=$1
+				fracless=$3
 				secfrac=0
 			}
 			OFS="	"
-			print fracless, secfrac, nick, url, $1, $2
+			print fracless, secfrac, $0
 		}	
 	'
 }
@@ -81,8 +81,8 @@ timeline () {
 		fi
 		[ -e "$twtfile" ] || continue
 
-	       	normalize_time "$nick" "$url" < "$twtfile"
-	done < ~/.config/txtnish/following | sort_tweets | limit | format_msg
+		awk -vnick="$nick" -vurl="$url" 'BEGIN{OFS="	"}{print nick,url,$0}' < "$twtfile"
+	done < ~/.config/txtnish/following | normalize_time | sort_tweets | limit | format_msg
 }
 
 
