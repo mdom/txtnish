@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TAB="	"
+TAB=$(printf "\t")
 limit=20
 formatter="fmt"
 
