@@ -27,7 +27,7 @@ urls () {
 }
 
 format_msg () {
-	while read _ _ nick url ts msg;do
+	while read nick url ts msg;do
 		printf "* %s (%s)\n" "$nick" "$ts"
 		if type "$formatter" >/dev/null 2>&1;then
 			printf "%s\n" "$msg" | $formatter
@@ -36,26 +36,6 @@ format_msg () {
 		fi
 		printf "\n"
 	done
-}
-
-normalize_time () {
-	awk -F"$TAB" '
-		$3 && $4 {
-			sub(/Z$/,"+00:00",$3)
-			match($3,/\.[0-9]+/)
-			if ( RSTART ) {
-				secfrac=substr($3,RSTART+1,RLENGTH-1)
-				fracless=$3
-				sub(/\.[0-9]+/,"",fracless)
-			}
-			else {
-				fracless=$3
-				secfrac=0
-			}
-			OFS="	"
-			print fracless, secfrac, $0
-		}	
-	'
 }
 
 limit () {
@@ -67,8 +47,35 @@ limit () {
 }
 
 sort_tweets () {
-	# TODO timezones are not sorted in the right order!
-	sort -r -k1,1 -k2,2
+	awk -F"$TAB" '
+		BEGIN { OFS=FS; OFMT="%f" }
+		$3 && $4 {
+			ts=$3
+			sub(/Z$/,"+00:00",ts)
+			no_fields = split(ts,ta,/[T:+.-]/)
+			seconds = (ta[1]-1970)*31557600 + ta[2] * 2628000 + ta[3] * 86400 + ta[4] * 3600 + ta[5] * 60 + ta[6]
+			if ( no_fields == 9 ) {
+				offset = ta[8] * 3600 + ta[9] * 60
+				fracsecs=ta[7]
+			}
+			else {
+				offset = ta[7] * 3600 + ta[8] * 60
+				fracsecs=0
+			}
+			mod = substr(ts,length(ts)-5,1)
+			if ( mod == "+" ) {
+				seconds += offset
+			} else {
+				seconds -= offset
+			}
+			print seconds, fracsecs, $0
+		}	
+	' | sort -nr -k1,2 | cut -d "$TAB" -f 3-
+}
+
+	else
+		cat
+	fi
 }
 
 timeline () {
@@ -81,8 +88,8 @@ timeline () {
 		fi
 		[ -e "$twtfile" ] || continue
 
-		awk -vnick="$nick" -vurl="$url" 'BEGIN{OFS="	"}{print nick,url,$0}' < "$twtfile"
-	done < ~/.config/txtnish/following | normalize_time | sort_tweets | limit | format_msg
+		awk -vnick="$nick" -vurl="$url" 'BEGIN{OFS="\t"}{print nick,url,$0}' < "$twtfile"
+	done < ~/.config/txtnish/following | sort_tweets | limit | format_msg
 }
 
 
