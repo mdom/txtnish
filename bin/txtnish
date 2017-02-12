@@ -1,9 +1,28 @@
 #!/bin/sh
 
 TAB=$(printf "\t")
+ESC="\033"
 limit=20
 formatter="fmt"
 use_pager=1
+
+## Colors
+csi="${ESC}["
+reset="${csi}0m"
+black=0
+red=1
+green=2
+yellow=3
+blue=4
+magenta=5
+cyan=6
+white=7
+
+fg=3
+bg=4
+
+color_nick=$yellow
+color_time=$blue
 
 die () {
 	printf "$0: %s\n" "$1"
@@ -35,7 +54,9 @@ urls () {
 
 format_msg () {
 	while read nick url ts msg;do
-		printf "* %s (%s)\n" "$nick" "$ts"
+		nick="${csi}${fg}${color_nick}m${nick}${reset}"
+		ts="${csi}${fg}${color_time}m${ts}${reset}"
+		printf "* %b (%b)\n" "$nick" "$ts"
 		if type "$formatter" >/dev/null 2>&1;then
 			printf "%s\n" "$msg" | $formatter
 		else
