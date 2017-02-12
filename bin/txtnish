@@ -106,7 +106,7 @@ sort_tweets () {
 
 pager () {
 	if [ "$use_pager" -eq 1 ];then
-		less
+		${PAGER:-less}
 	else
 		cat
 	fi
