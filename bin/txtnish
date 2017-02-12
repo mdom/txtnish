@@ -164,6 +164,48 @@ collapse_mentions () {
 	'
 }
 
+follow () {
+	new_nick=$1
+	new_url=$2
+	tempfile="$HOME/.config/txtnish/following.$$"
+	while read nick url;do
+		if [ "$nick" = "$new_nick" ] || [ "$url" = "$new_url" ];then
+			die "You're already following $nick at $url."
+		fi
+		printf "$nick $url\n";
+	done < "$HOME/.config/txtnish/following" > "$tempfile"
+	printf "$new_nick $new_url\n" >> "$tempfile";
+	mv "$tempfile" "$HOME/.config/txtnish/following"
+}
+
+unfollow () {
+	old_nick=$1
+	tempfile="$HOME/.config/txtnish/following.$$"
+	removed=
+	while read nick url;do
+		if [ "$nick" = "$old_nick" ];then
+			removed=1
+		else
+			printf "$nick $url\n";
+		fi
+	done < "$HOME/.config/txtnish/following" > "$tempfile"
+	mv "$tempfile" "$HOME/.config/txtnish/following"
+	if [ -z "$removed" ];then
+		die "You're not following $old_nick."
+	fi
+
+}
+
+following () {
+	cat "$HOME/.config/txtnish/following"
+}
+
+cleanup () {
+	[ -e "$tempfile" ] && rm "$tempfile"
+}
+
+trap cleanup EXIT
+
 mode=$1
 shift
 
@@ -171,6 +213,9 @@ read_config
 
 case $mode in
 	update ) update ;;
+	follow ) follow "$@" ;;
+	unfollow ) unfollow "$@" ;;
+	following ) following ;;
 	timeline ) timeline ;;
 	* ) die "Unknown mode $mode." ;;
 esac
