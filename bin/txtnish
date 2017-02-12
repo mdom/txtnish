@@ -5,6 +5,7 @@ ESC="\033"
 limit=20
 formatter="fmt"
 use_pager=1
+use_color=1
 
 ## Colors
 csi="${ESC}["
@@ -54,8 +55,10 @@ urls () {
 
 format_msg () {
 	while read nick url ts msg;do
-		nick="${csi}${fg}${color_nick}m${nick}${reset}"
-		ts="${csi}${fg}${color_time}m${ts}${reset}"
+		if [ "$use_color" -eq 1 ];then
+			nick="${csi}${fg}${color_nick}m${nick}${reset}"
+			ts="${csi}${fg}${color_time}m${ts}${reset}"
+		fi
 		printf "* %b (%b)\n" "$nick" "$ts"
 		if type "$formatter" >/dev/null 2>&1;then
 			printf "%s\n" "$msg" | $formatter
