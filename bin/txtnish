@@ -3,6 +3,7 @@
 TAB=$(printf "\t")
 limit=20
 formatter="fmt"
+use_pager=1
 
 die () {
 	printf "$0: %s\n" "$1"
@@ -79,6 +80,9 @@ sort_tweets () {
 	' | sort -nr -k1,2 | cut -d "$TAB" -f 3-
 }
 
+pager () {
+	if [ "$use_pager" -eq 1 ];then
+		less
 	else
 		cat
 	fi
@@ -95,7 +99,7 @@ timeline () {
 		[ -e "$twtfile" ] || continue
 
 		awk -vnick="$nick" -vurl="$url" 'BEGIN{OFS="\t"}{print nick,url,$0}' < "$twtfile"
-	done < ~/.config/txtnish/following | sort_tweets | limit | format_msg
+	done < ~/.config/txtnish/following | sort_tweets | limit | format_msg | pager
 }
 
 
