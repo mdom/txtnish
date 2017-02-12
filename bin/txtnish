@@ -124,9 +124,45 @@ timeline () {
 		[ -e "$twtfile" ] || continue
 
 		awk -vnick="$nick" -vurl="$url" 'BEGIN{OFS="\t"}{print nick,url,$0}' < "$twtfile"
-	done < ~/.config/txtnish/following | sort_tweets | limit | format_msg | pager
+	done < ~/.config/txtnish/following | sort_tweets | limit | collapse_mentions | format_msg | pager
 }
 
+collapse_mentions () {
+	## TODO this *has* to be easier
+	awk -v following=$HOME/.config/txtnish/following '
+		BEGIN {
+			FS=" "
+			while ( (getline < following) > 0 ) {
+				urls[$2]=$1
+			}
+			FS="\t"
+		}
+		{
+			new_msg=""
+			while ( match($4,/@<[^>]+>/) ) {
+				new_msg = new_msg substr($4,1,RSTART-1)
+				n = split(substr($4,RSTART+2,RLENGTH-3),fields," ")
+				if ( n == 1 ) {
+					url = fields[1]
+				} else {
+					url = fields[2]
+				}
+				if ( url in urls ) {
+					new_msg = new_msg "@" urls[url]
+				}
+				else {
+					new_msg = new_msg substr($4,RSTART,RLENGTH)
+
+				}
+				$4 = substr($4,RSTART+RLENGTH)
+			}
+			new_msg = new_msg $4
+			$4=new_msg
+			print
+
+		}
+	'
+}
 
 mode=$1
 shift
