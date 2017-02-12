@@ -13,6 +13,12 @@ create_dir () {
 	[ -d "$1" ] || mkdir -p "$1"
 }
 
+read_config () {
+	if [ -e ~/.config/txtnish/config ];then
+		. ~/.config/txtnish/config
+	fi
+}
+
 update () {
 	create_dir ~/.cache/txtnish/
 	urls | xargs -n1 -P20 wget --timestamping -P ~/.cache/txtnish/ -x -q
@@ -95,6 +101,8 @@ timeline () {
 
 mode=$1
 shift
+
+read_config
 
 case $mode in
 	update ) update ;;
