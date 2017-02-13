@@ -9,6 +9,12 @@ use_color=1
 twtfile=~/twtxt.txt
 user_agent="txtnish/0.1 (+https://github.com/mdom/txtnish)"
 
+config_dir="$HOME/.config/txtnish/"
+config_file="$config_dir/config"
+follow_file="$config_dir/following"
+draft_file="$config_dir/draft"
+cache_dir="$HOME/.cache/txtnish/"
+
 ## Colors
 csi="${ESC}["
 reset="${csi}0m"
@@ -37,8 +43,8 @@ create_dir () {
 }
 
 read_config () {
-	if [ -e ~/.config/txtnish/config ];then
-		. ~/.config/txtnish/config
+	if [ -e "$config_file" ];then
+		. "$config_file"
 	fi
 }
 
@@ -47,11 +53,11 @@ update () {
 }
 
 urls () {
-	[ -f ~/.config/txtnish/following ] || return
+	[ -f "$follow_file" ] || return
 	## i'm not using awk here as the number of urls is usually pretty short.
 	while read _ url;do
 		printf "%s\n" "$url"
-	done < ~/.config/txtnish/following
+	done < "$follow_file"
 }
 
 format_msg () {
@@ -131,7 +137,7 @@ timeline () {
 		url_to_file "$url"
 		[ -n "$_url_to_file" ] || continue
 		add_nick_url "$nick" "$url" "$_url_to_file"
-	done < ~/.config/txtnish/following | display_tweets
+	done < "$follow_file" | display_tweets
 }
 
 add_nick_url () {
@@ -147,10 +153,10 @@ display_tweets () {
 
 collapse_mentions () {
 	## TODO this *has* to be easier
-	awk -v following=$HOME/.config/txtnish/following '
+	awk -v follow_file="$follow_file" '
 		BEGIN {
 			FS=" "
-			while ( (getline < following) > 0 ) {
+			while ( (getline < follow_file) > 0 ) {
 				urls[$2]=$1
 			}
 			FS="\t"
@@ -182,10 +188,10 @@ collapse_mentions () {
 }
 
 expand_mentions () {
-	awk -v following=$HOME/.config/txtnish/following '
+	awk -v follow_file="$follow_file" '
 		BEGIN {
 			FS=" "
-			while ( (getline < following) > 0 ) {
+			while ( (getline < follow_file) > 0 ) {
 				nicks[$1]=$2
 			}
 			FS="\t"
@@ -212,26 +218,26 @@ view () {
 			add_nick_url "$nick" "$url" "$_url_to_file" | display_tweets
 			return
 		fi
-	done < "$HOME/.config/txtnish/following"
+	done < "$follow_file"
 }
 
 follow () {
 	new_nick=$1
 	new_url=$2
-	tempfile="$HOME/.config/txtnish/following.$$"
+	tempfile="$follow_file.$$"
 	while read nick url;do
 		if [ "$nick" = "$new_nick" ] || [ "$url" = "$new_url" ];then
 			die "You're already following $nick at $url."
 		fi
 		printf "$nick $url\n";
-	done < "$HOME/.config/txtnish/following" > "$tempfile"
+	done < "$follow_file" > "$tempfile"
 	printf "$new_nick $new_url\n" >> "$tempfile";
-	mv "$tempfile" "$HOME/.config/txtnish/following"
+	mv "$tempfile" "$follow_file"
 }
 
 unfollow () {
 	old_nick=$1
-	tempfile="$HOME/.config/txtnish/following.$$"
+	tempfile="$follow_file.$$"
 	removed=
 	while read nick url;do
 		if [ "$nick" = "$old_nick" ];then
@@ -239,29 +245,28 @@ unfollow () {
 		else
 			printf "$nick $url\n";
 		fi
-	done < "$HOME/.config/txtnish/following" > "$tempfile"
-	mv "$tempfile" "$HOME/.config/txtnish/following"
+	done < "$follow_file" > "$tempfile"
+	mv "$tempfile" "$follow_file"
 	if [ -z "$removed" ];then
 		die "You're not following $old_nick."
 	fi
 }
 
 following () {
-	cat "$HOME/.config/txtnish/following"
+	cat "$follow_file"
 }
 
 tweet () {
-	_draft="$HOME/.config/txtnish/draft"
-	: >"$_draft"
+	: >"$draft_file"
 
 	if [ $# -eq 0 ];then
 		if [ -t 0 ];then
-			"$EDITOR" "$_draft"
+			"$EDITOR" "$draft_file"
 		else
-			cat > "$_draft"
+			cat > "$draft_file"
 		fi
 	else
-		printf "%s\n" "$@" > "$_draft"
+		printf "%s\n" "$@" > "$draft_file"
 	fi
 
 	_fracsecs=0
@@ -271,7 +276,7 @@ tweet () {
 		[ -n "$msg" ] || continue
 		printf "$_timestamp\t%s\n" "$_fracsecs" "$msg"
 		_fracsecs=$(( $_fracsecs + 1 ))
-	done < "$_draft" | expand_mentions >> "$twtfile"
+	done < "$draft_file" | expand_mentions >> "$twtfile"
 	post_tweet_hook
 }
 
@@ -285,8 +290,8 @@ post_tweet_hook () {
 
 trap cleanup EXIT
 
-create_dir "$HOME/.config/txtnish"
-create_dir "$HOME/.cache/txtnish"
+create_dir "$config_dir"
+create_dir "$cache_dir"
 
 mode=$1
 shift
