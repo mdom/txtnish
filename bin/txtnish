@@ -6,6 +6,7 @@ limit=20
 formatter="fmt"
 use_pager=1
 use_color=1
+twtfile=~/twtxt.txt
 user_agent="txtnish/0.1 (+https://github.com/mdom/txtnish)"
 
 ## Colors
@@ -170,14 +171,32 @@ collapse_mentions () {
 				}
 				else {
 					new_msg = new_msg substr($4,RSTART,RLENGTH)
-
 				}
 				$4 = substr($4,RSTART+RLENGTH)
 			}
 			new_msg = new_msg $4
 			$4=new_msg
 			print
+		}
+	'
+}
 
+expand_mentions () {
+	awk -v following=$HOME/.config/txtnish/following '
+		BEGIN {
+			FS=" "
+			while ( (getline < following) > 0 ) {
+				nicks[$1]=$2
+			}
+			FS="\t"
+			OFS=FS
+		}
+		{
+			## TODO Bruteforcing, replace with something sane in the future
+			for ( nick in nicks ) {
+				gsub("@" nick, "@<" nick " " nicks[nick] ">", $2)
+			}
+			print
 		}
 	'
 }
@@ -225,11 +244,34 @@ unfollow () {
 	if [ -z "$removed" ];then
 		die "You're not following $old_nick."
 	fi
-
 }
 
 following () {
 	cat "$HOME/.config/txtnish/following"
+}
+
+tweet () {
+	_draft="$HOME/.config/txtnish/draft"
+	: >"$_draft"
+
+	if [ $# -eq 0 ];then
+		if [ -t 0 ];then
+			"$EDITOR" "$_draft"
+		else
+			cat > "$_draft"
+		fi
+	else
+		printf "%s\n" "$@" > "$_draft"
+	fi
+
+	_fracsecs=0
+	_timestamp=$(TZ=C date "+%Y-%m-%dT%H:%M:%S.%%06iZ")
+
+	while read msg;do
+		[ -n "$msg" ] || continue
+		printf "$_timestamp\t%s\n" "$_fracsecs" "$msg"
+		_fracsecs=$(( $_fracsecs + 1 ))
+	done < "$_draft" | expand_mentions >> "$twtfile"
 }
 
 cleanup () {
@@ -249,6 +291,7 @@ case $mode in
 	unfollow ) unfollow "$@" ;;
 	following ) following ;;
 	timeline ) timeline ;;
+	tweet ) tweet "$@" ;;
 	view ) view "$@" ;;
 	* ) die "Unknown mode $mode." ;;
 esac
