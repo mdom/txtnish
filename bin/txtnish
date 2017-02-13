@@ -113,18 +113,36 @@ pager () {
 	fi
 }
 
+url_to_file () {
+	_twtfile=~/.cache/txtnish/${1#*://}
+	_twtfile=${_twtfile%%#*}
+	if [ -d "$_twtfile" ] && [ -e "$_twtfile/index.html" ];then
+		_twtfile="$_twtfile/index.html"
+	fi
+	if ! [ -e "$_twtfile" ];then
+		_twtfile=
+	fi
+	_url_to_file="$_twtfile"
+}
+
 timeline () {
 	update;
 	while read nick url;do
-		twtfile=~/.cache/txtnish/${url#*://}
-		twtfile=${twtfile%%#*}
-		if [ -d "$twtfile" ] && [ -e "$twtfile/index.html" ];then
-			twtfile="$twtfile/index.html"
-		fi
-		[ -e "$twtfile" ] || continue
+		url_to_file "$url"
+		[ -n "$_url_to_file" ] || continue
+		add_nick_url "$nick" "$url" "$_url_to_file"
+	done < ~/.config/txtnish/following | display_tweets
+}
 
-		awk -vnick="$nick" -vurl="$url" 'BEGIN{OFS="\t"}{print nick,url,$0}' < "$twtfile"
-	done < ~/.config/txtnish/following | sort_tweets | limit | collapse_mentions | format_msg | pager
+add_nick_url () {
+	_nick=$1
+	_url=$2
+	_twtfile=$3
+	awk -vnick="$_nick" -vurl="$_url" 'BEGIN{OFS="\t"}{print nick,url,$0}' < "$_twtfile"
+}
+
+display_tweets () {
+	sort_tweets | limit | collapse_mentions | format_msg | pager
 }
 
 collapse_mentions () {
@@ -162,6 +180,20 @@ collapse_mentions () {
 
 		}
 	'
+}
+
+view () {
+	## TODO update only the single url
+	update;
+	_nick=$1
+	while read nick url;do
+		if [ "$nick" = "$_nick" ] ;then
+			url_to_file "$url"
+			[ -n "$_url_to_file" ] || continue
+			add_nick_url "$nick" "$url" "$_url_to_file" | display_tweets
+			return
+		fi
+	done < "$HOME/.config/txtnish/following"
 }
 
 follow () {
@@ -217,6 +249,7 @@ case $mode in
 	unfollow ) unfollow "$@" ;;
 	following ) following ;;
 	timeline ) timeline ;;
+	view ) view "$@" ;;
 	* ) die "Unknown mode $mode." ;;
 esac
 
