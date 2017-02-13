@@ -154,6 +154,7 @@ collapse_mentions () {
 				urls[$2]=$1
 			}
 			FS="\t"
+			OFS=FS
 		}
 		{
 			new_msg=""
