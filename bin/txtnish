@@ -272,10 +272,15 @@ tweet () {
 		printf "$_timestamp\t%s\n" "$_fracsecs" "$msg"
 		_fracsecs=$(( $_fracsecs + 1 ))
 	done < "$_draft" | expand_mentions >> "$twtfile"
+	post_tweet_hook
 }
 
 cleanup () {
 	[ -e "$tempfile" ] && rm "$tempfile"
+}
+
+post_tweet_hook () {
+	:
 }
 
 trap cleanup EXIT
