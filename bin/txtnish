@@ -43,7 +43,6 @@ read_config () {
 }
 
 update () {
-	create_dir ~/.cache/txtnish/
 	urls | xargs -n1 -P20 wget --user-agent="$user_agent" --timestamping -P ~/.cache/txtnish/ -x -q
 }
 
@@ -279,6 +278,9 @@ cleanup () {
 }
 
 trap cleanup EXIT
+
+create_dir "$HOME/.config/txtnish"
+create_dir "$HOME/.cache/txtnish"
 
 mode=$1
 shift
