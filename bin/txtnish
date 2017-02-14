@@ -10,6 +10,8 @@ use_color=1
 twtfile=~/twtxt.txt
 user_agent="txtnish/0.1 (+https://github.com/mdom/txtnish)"
 
+program_name=${0##*/}
+
 config_dir="$HOME/.config/txtnish/"
 config_file="$config_dir/config"
 follow_file="$config_dir/following"
@@ -35,7 +37,7 @@ color_nick=$yellow
 color_time=$blue
 
 die () {
-	printf "$0: %s\n" "$1"
+	printf "$program_name: %s\n" "$1"
 	exit "${2:-1}"
 }
 
