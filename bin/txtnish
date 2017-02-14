@@ -214,6 +214,7 @@ view () {
 	## TODO update only the single url
 	update;
 	_nick=$1
+	[ -n "$_nick" ] || usage "Required parameter NICK is missing."
 	while read nick url;do
 		if [ "$nick" = "$_nick" ] ;then
 			url_to_file "$url"
@@ -227,6 +228,10 @@ view () {
 follow () {
 	new_nick=$1
 	new_url=$2
+
+	[ -n "$new_nick" ] || usage "Required parameter NICK is missing."
+	[ -n "$new_url"  ] || usage "Required parameter URL is missing."
+
 	tempfile="$follow_file.$$"
 	while read nick url;do
 		if [ "$nick" = "$new_nick" ] || [ "$url" = "$new_url" ];then
@@ -240,6 +245,7 @@ follow () {
 
 unfollow () {
 	old_nick=$1
+	[ -n "$old_nick" ] || usage "Required parameter NICK is missing."
 	tempfile="$follow_file.$$"
 	removed=
 	while read nick url;do
