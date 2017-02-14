@@ -138,7 +138,7 @@ reply () {
 	fi
 }
 
-pager () {
+maybe_pager () {
 	if [ "$use_pager" -eq 1 ];then
 		${PAGER:-less}
 	else
@@ -175,7 +175,7 @@ prefix_nick_url () {
 }
 
 display_tweets () {
-	sort_tweets | limit | collapse_mentions | format_msg | pager
+	sort_tweets | limit | collapse_mentions | format_msg | maybe_pager
 }
 
 collapse_mentions () {
@@ -333,6 +333,8 @@ call_mode () {
 		case $opt in
 			l ) limit="$OPTARG" ;;
 			h ) usage ;;
+			p ) use_pager=1 ;;
+			P ) use_pager=0 ;;
 			a ) sort_order=ascending ;;
 			d ) sort_order=descending ;;
 			: ) usage "Option -$OPTARG requires an argument." ;;
@@ -397,6 +399,8 @@ EOF
 			l ) printf "  -l NUM Limit total numer of tweets shown.\n" ;;
 			a ) printf "  -a     Sort timeline in ascending order.\n" ;;
 			d ) printf "  -d     Sort timeline in descending order.\n" ;;
+			p ) printf "  -p     Use pager to display content.\n" ;;
+			P ) printf "  -P     Do not use pager to display content.\n" ;;
 		esac
 		options=${options#?}
 	done
@@ -469,7 +473,7 @@ case $mode in
 		;;
 	timeline )
 		synopsis="Retrieve your personal timeline."
-		options="hl:ad"
+		options="hl:adpP"
 		call_mode "$@"
 		;;
 	reply )
@@ -491,7 +495,7 @@ case $mode in
 	view )
 		synopsis="Show feed of given source."
 		arguments="NICK"
-		options="hl:ad"
+		options="hl:adpP"
 		call_mode "$@"
 		;;
 	* ) printf "Unknown mode $mode.\n" >&2; usage_main; exit 1;;
