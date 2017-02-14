@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -e
-
 VERSION="0.2"
 TAB=$(printf "\t")
 ESC="\033"
@@ -55,6 +53,7 @@ read_config () {
 }
 
 update () {
+	## TODO check return code of xargs and do something with it
 	urls | xargs -n1 -P20 wget --user-agent="$user_agent" --timestamping -P ~/.cache/txtnish/ -x -q
 }
 
