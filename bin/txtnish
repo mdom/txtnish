@@ -1,5 +1,6 @@
 #!/bin/sh
 
+VERSION="0.2"
 TAB=$(printf "\t")
 ESC="\033"
 limit=20
@@ -107,7 +108,7 @@ sort_tweets () {
 				seconds -= offset
 			}
 			print seconds, fracsecs, $0
-		}	
+		}
 	' | sort -nr -k1,2 | cut -d "$TAB" -f 3-
 }
 
@@ -288,22 +289,71 @@ post_tweet_hook () {
 	:
 }
 
+usage_main () {
+	cat <<-EOF
+		usage: $program_name COMMAND [OPTIONS...]
+
+		  Command:
+		    tweet          Append a new tweet to your twtxt file.
+		    timeline       Retrieve your personal timeline.
+		    view           Show feed of given source.
+		    follow         Add a new source to your followings.
+		    unfollow       Remove an existing source from your followings.
+		    following      Return the list of sources you're following.
+
+		  Options:
+		    -h   Print a help message and exit.
+		    -v   Print version and exit.
+		    -c   Specify a custom config file location.
+EOF
+}
+
 trap cleanup EXIT
 
 create_dir "$config_dir"
 create_dir "$cache_dir"
 
-mode=$1
-shift
+while getopts ":hvc:" opt;do
+	case $opt in
+		v ) printf "$VERSION\n"; exit 0  ;;
+		h ) usage_main; exit 0 ;;
+		c )
+			config_file="$OPTARG"
+			if ! [ -e "$config_file" ];then
+				die "Missing configuration file '$config_file'";
+			fi
+			;;
+		\? )
+			printf "Invalid option: -$OPTARG\n" >&2
+			exit 1;
+			;;
+		: )
+			printf "Option -$OPTARG requires an argument.\n" >&2
+			exit 1
+			;;
+		* ) usage_main; exit 1 ;;
+	esac
+done
+
+shift $(($OPTIND - 1))
 
 read_config
 
+mode=$1
+
+if [ -z "$mode" ];then
+	usage_main
+	exit 1
+fi
+
+shift
+
 case $mode in
-	update ) update ;;
+	update ) update "$@" ;;
 	follow ) follow "$@" ;;
 	unfollow ) unfollow "$@" ;;
-	following ) following ;;
-	timeline ) timeline ;;
+	following ) following "$@" ;;
+	timeline ) timeline "$@" ;;
 	tweet ) tweet "$@" ;;
 	view ) view "$@" ;;
 	* ) die "Unknown mode $mode." ;;
