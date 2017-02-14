@@ -314,6 +314,10 @@ draft_to_twtfile () {
 		printf "$_timestamp\t%s\n" "$_fracsecs" "$msg"
 		_fracsecs=$(( $_fracsecs + 1 ))
 	done < "$draft_file" | expand_mentions >> "$twtfile"
+	publish
+}
+
+publish () {
 	post_tweet_hook
 }
 
@@ -356,6 +360,7 @@ usage_main () {
 		    unfollow       Remove an existing source from your followings.
 		    following      Return the list of sources you're following.
 		    reply          Reply to tweets.
+		    publish        Publish your twtfile.
 
 		  Options:
 		    -h      Print a help message and exit.
@@ -471,6 +476,11 @@ case $mode in
 	reply )
 		synopsis="Reply to tweets."
 		options="hl:ad"
+		call_mode "$@"
+		;;
+	publish )
+		synopsis="Publish your twtfile."
+		options="h"
 		call_mode "$@"
 		;;
 	tweet )
