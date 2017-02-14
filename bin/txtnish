@@ -291,7 +291,23 @@ post_tweet_hook () {
 	:
 }
 
+call_mode () {
+	while getopts ":$options" opt;do
+		case $opt in
+			l ) limit="$OPTARG" ;;
+			h ) usage ;;
+			: ) usage "Option -$OPTARG requires an argument." ;;
+			\? ) usage "Invalid option -$OPTARG." ;;
+		esac
+	done
+	shift $(( OPTIND - 1 ))
+	$mode "$@"
+}
+
 usage_main () {
+	if [ -n "$1" ];then
+		printf "$1\n" >&2;
+	fi
 	cat <<-EOF
 		usage: $program_name COMMAND [OPTIONS...]
 
@@ -304,10 +320,50 @@ usage_main () {
 		    following      Return the list of sources you're following.
 
 		  Options:
-		    -h   Print a help message and exit.
-		    -v   Print version and exit.
-		    -c   Specify a custom config file location.
+		    -h      Print a help message and exit.
+		    -v      Print version and exit.
+		    -c FILE Specify a custom config file location.
+
 EOF
+	if [ -n "$1" ];then
+		exit 1
+	else
+		exit 0
+	fi
+}
+
+usage () {
+	_err=$1
+	if [ -n "$_err" ];then
+		printf "$_err\n" >&2
+	fi
+
+	cat <<-EOF
+		usage: $program_name $mode [OPTIONS...]${arguments:+ $arguments}
+
+		Synopsis:
+		  $synopsis
+
+		Options:
+EOF
+
+	while [ -n "$options" ] ;do
+		c=${options%${options#?}}
+		case $c in
+			h ) printf "  -h     Print a help message and exit.\n" ;;
+			l ) printf "  -l NUM Limit total numer of tweets shown.\n" ;;
+		esac
+		options=${options#?}
+	done
+
+	## Always end usage with a empty line
+	printf "\n"
+
+	if [ -n "$_err" ];then
+		exit 1
+	else
+		exit 0
+	fi
 }
 
 trap cleanup EXIT
@@ -318,22 +374,15 @@ create_dir "$cache_dir"
 while getopts ":hvc:" opt;do
 	case $opt in
 		v ) printf "$VERSION\n"; exit 0  ;;
-		h ) usage_main; exit 0 ;;
+		h ) usage_main ;;
 		c )
 			config_file="$OPTARG"
 			if ! [ -e "$config_file" ];then
 				die "Missing configuration file '$config_file'";
 			fi
 			;;
-		\? )
-			printf "Invalid option: -$OPTARG\n" >&2
-			exit 1;
-			;;
-		: )
-			printf "Option -$OPTARG requires an argument.\n" >&2
-			exit 1
-			;;
-		* ) usage_main; exit 1 ;;
+		: ) usage_main "Option -$OPTARG requires an argument." ;;
+		\? ) usage_main "Invalid option -$OPTARG." ;;
 	esac
 done
 
@@ -351,14 +400,46 @@ fi
 shift
 
 case $mode in
-	update ) update "$@" ;;
-	follow ) follow "$@" ;;
-	unfollow ) unfollow "$@" ;;
-	following ) following "$@" ;;
-	timeline ) timeline "$@" ;;
-	tweet ) tweet "$@" ;;
-	view ) view "$@" ;;
-	* ) die "Unknown mode $mode." ;;
+	update )
+		synopsis="Fetching new twtfiles from all your sources."
+		options="h"
+		call_mode "$@"
+		;;
+	follow )
+		synopsis="Add a new source to your followings."
+		arguments="NICK SOURCE"
+		options="h"
+		call_mode "$@"
+		;;
+	unfollow )
+		synopsis="Remove an existing source from your followings."
+		arguments="NICK"
+		options="h"
+		call_mode "$@"
+		;;
+	following )
+		synopsis="Return the list of sources you're following."
+		options="h"
+		call_mode "$@"
+		;;
+	timeline )
+		synopsis="Retrieve your personal timeline."
+		options="hl:"
+		call_mode "$@"
+		;;
+	tweet )
+		synopsis="Append a new tweet to your twtxt file."
+		arguments="[TWEET...]"
+		options="h"
+		call_mode "$@"
+		;;
+	view )
+		synopsis="Show feed of given source."
+		arguments="NICK"
+		options="hl:"
+		call_mode "$@"
+		;;
+	* ) printf "Unknown mode $mode.\n" >&2; usage_main; exit 1;;
 esac
 
 exit 0
