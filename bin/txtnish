@@ -125,6 +125,20 @@ sort_tweets () {
 	' | sort $_sort_switches -n -k1,2 | cut -d "$TAB" -f 3-
 }
 
+reply () {
+	update
+	use_pager=0
+	use_color=0
+	timeline | sed -e 's/^/# /' -e 's/^# $//' > "$draft_file"
+	"$EDITOR" "$draft_file"
+	tempfile="$draft_file.$$"
+	sed -e '/^# /d' -e '/^[[:space:]]*$/d' "$draft_file" > "$tempfile"
+	mv "$tempfile" "$draft_file"
+	if [ -s "$draft_file" ];then
+		draft_to_twtfile
+	fi
+}
+
 pager () {
 	if [ "$use_pager" -eq 1 ];then
 		${PAGER:-less}
@@ -288,10 +302,13 @@ tweet () {
 	else
 		printf "%s\n" "$@" > "$draft_file"
 	fi
+	draft_to_twtfile
+}
 
+
+draft_to_twtfile () {
 	_fracsecs=0
 	_timestamp=$(TZ=C date "+%Y-%m-%dT%H:%M:%S.%%06iZ")
-
 	while read msg;do
 		[ -n "$msg" ] || continue
 		printf "$_timestamp\t%s\n" "$_fracsecs" "$msg"
@@ -338,6 +355,7 @@ usage_main () {
 		    follow         Add a new source to your followings.
 		    unfollow       Remove an existing source from your followings.
 		    following      Return the list of sources you're following.
+		    reply          Reply to tweets.
 
 		  Options:
 		    -h      Print a help message and exit.
@@ -447,6 +465,11 @@ case $mode in
 		;;
 	timeline )
 		synopsis="Retrieve your personal timeline."
+		options="hl:ad"
+		call_mode "$@"
+		;;
+	reply )
+		synopsis="Reply to tweets."
 		options="hl:ad"
 		call_mode "$@"
 		;;
