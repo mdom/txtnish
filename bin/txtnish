@@ -148,11 +148,11 @@ timeline () {
 	while read nick url;do
 		url_to_file "$url"
 		[ -n "$_url_to_file" ] || continue
-		add_nick_url "$nick" "$url" "$_url_to_file"
+		prefix_nick_url "$nick" "$url" "$_url_to_file"
 	done < "$follow_file" | display_tweets
 }
 
-add_nick_url () {
+prefix_nick_url () {
 	_nick=$1
 	_url=$2
 	_twtfile=$3
@@ -228,7 +228,7 @@ view () {
 		if [ "$nick" = "$_nick" ] ;then
 			url_to_file "$url"
 			[ -n "$_url_to_file" ] || continue
-			add_nick_url "$nick" "$url" "$_url_to_file" | display_tweets
+			prefix_nick_url "$nick" "$url" "$_url_to_file" | display_tweets
 			return
 		fi
 	done < "$follow_file"
