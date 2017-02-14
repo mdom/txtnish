@@ -7,6 +7,7 @@ limit=20
 formatter="fmt"
 use_pager=1
 use_color=1
+always_update=1
 sort_order=descending
 twtfile=~/twtxt.txt
 user_agent="txtnish/0.1 (+https://github.com/mdom/txtnish)"
@@ -55,6 +56,12 @@ read_config () {
 update () {
 	## TODO check return code of xargs and do something with it
 	urls | xargs -n1 -P20 wget --user-agent="$user_agent" --timestamping -P ~/.cache/txtnish/ -x -q
+}
+
+maybe_update () {
+	if [ "$always_update" -eq 1 ];then
+		update
+	fi
 }
 
 urls () {
@@ -125,7 +132,7 @@ sort_tweets () {
 }
 
 reply () {
-	update
+	maybe_update
 	use_pager=0
 	use_color=0
 	timeline | sed -e 's/^/# /' -e 's/^# $//' > "$draft_file"
@@ -159,7 +166,7 @@ url_to_file () {
 }
 
 timeline () {
-	update;
+	maybe_update;
 	while read nick url;do
 		url_to_file "$url"
 		[ -n "$_url_to_file" ] || continue
@@ -236,7 +243,7 @@ expand_mentions () {
 
 view () {
 	## TODO update only the single url
-	update;
+	maybe_update;
 	_nick=$1
 	[ -n "$_nick" ] || usage "Required parameter NICK is missing."
 	while read nick url;do
@@ -335,6 +342,8 @@ call_mode () {
 			h ) usage ;;
 			p ) use_pager=1 ;;
 			P ) use_pager=0 ;;
+			u ) always_update=1 ;;
+			U ) always_update=0 ;;
 			a ) sort_order=ascending ;;
 			d ) sort_order=descending ;;
 			: ) usage "Option -$OPTARG requires an argument." ;;
@@ -401,6 +410,8 @@ EOF
 			d ) printf "  -d     Sort timeline in descending order.\n" ;;
 			p ) printf "  -p     Use pager to display content.\n" ;;
 			P ) printf "  -P     Do not use pager to display content.\n" ;;
+			u ) printf "  -u     Update sources.\n" ;;
+			U ) printf "  -U     Do not update sources.\n" ;;
 		esac
 		options=${options#?}
 	done
@@ -473,12 +484,12 @@ case $mode in
 		;;
 	timeline )
 		synopsis="Retrieve your personal timeline."
-		options="hl:adpP"
+		options="hl:adpPuU"
 		call_mode "$@"
 		;;
 	reply )
 		synopsis="Reply to tweets."
-		options="hl:ad"
+		options="hl:aduU"
 		call_mode "$@"
 		;;
 	publish )
@@ -495,7 +506,7 @@ case $mode in
 	view )
 		synopsis="Show feed of given source."
 		arguments="NICK"
-		options="hl:adpP"
+		options="hl:adpPuU"
 		call_mode "$@"
 		;;
 	* ) printf "Unknown mode $mode.\n" >&2; usage_main; exit 1;;
