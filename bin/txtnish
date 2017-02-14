@@ -313,6 +313,7 @@ call_mode () {
 usage_main () {
 	if [ -n "$1" ];then
 		printf "$1\n" >&2;
+		exec >&2
 	fi
 	cat <<-EOF
 		usage: $program_name COMMAND [OPTIONS...]
@@ -342,6 +343,7 @@ usage () {
 	_err=$1
 	if [ -n "$_err" ];then
 		printf "$_err\n" >&2
+		exec >&2
 	fi
 
 	cat <<-EOF
