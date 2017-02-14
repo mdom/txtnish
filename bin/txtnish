@@ -7,6 +7,7 @@ limit=20
 formatter="fmt"
 use_pager=1
 use_color=1
+sort_order=descending
 twtfile=~/twtxt.txt
 user_agent="txtnish/0.1 (+https://github.com/mdom/txtnish)"
 
@@ -88,6 +89,14 @@ limit () {
 }
 
 sort_tweets () {
+	if [ "$sort_order" = "ascending" ];then
+		_sort_switches=
+	elif [ "$sort_order" = "descending" ];then
+		_sort_switches=-r
+	else
+		die "Unknown sort_order '$sort_order'. Must be either ascending or descending."
+	fi
+
 	awk -F"$TAB" '
 		BEGIN { OFS=FS; OFMT="%f" }
 		$3 && $4 {
@@ -111,7 +120,7 @@ sort_tweets () {
 			}
 			print seconds, fracsecs, $0
 		}
-	' | sort -nr -k1,2 | cut -d "$TAB" -f 3-
+	' | sort $_sort_switches -n -k1,2 | cut -d "$TAB" -f 3-
 }
 
 pager () {
@@ -302,6 +311,8 @@ call_mode () {
 		case $opt in
 			l ) limit="$OPTARG" ;;
 			h ) usage ;;
+			a ) sort_order=ascending ;;
+			d ) sort_order=descending ;;
 			: ) usage "Option -$OPTARG requires an argument." ;;
 			\? ) usage "Invalid option -$OPTARG." ;;
 		esac
@@ -360,6 +371,8 @@ EOF
 		case $c in
 			h ) printf "  -h     Print a help message and exit.\n" ;;
 			l ) printf "  -l NUM Limit total numer of tweets shown.\n" ;;
+			a ) printf "  -a     Sort timeline in ascending order.\n" ;;
+			d ) printf "  -d     Sort timeline in descending order.\n" ;;
 		esac
 		options=${options#?}
 	done
@@ -432,7 +445,7 @@ case $mode in
 		;;
 	timeline )
 		synopsis="Retrieve your personal timeline."
-		options="hl:"
+		options="hl:ad"
 		call_mode "$@"
 		;;
 	tweet )
@@ -444,7 +457,7 @@ case $mode in
 	view )
 		synopsis="Show feed of given source."
 		arguments="NICK"
-		options="hl:"
+		options="hl:ad"
 		call_mode "$@"
 		;;
 	* ) printf "Unknown mode $mode.\n" >&2; usage_main; exit 1;;
