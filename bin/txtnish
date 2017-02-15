@@ -182,7 +182,11 @@ prefix_nick_url () {
 }
 
 display_tweets () {
-	sort_tweets | limit | collapse_mentions | format_msg | maybe_pager
+	remove_escape_seq | sort_tweets | limit | collapse_mentions | format_msg | maybe_pager
+}
+
+remove_escape_seq () {
+	sed 's/[^[:print:][:space:]]//g'
 }
 
 collapse_mentions () {
