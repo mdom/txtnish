@@ -10,7 +10,7 @@ use_color=1
 always_update=1
 sort_order=descending
 twtfile=~/twtxt.txt
-user_agent="txtnish/0.1 (+https://github.com/mdom/txtnish)"
+disclose_identity=0
 
 program_name=${0##*/}
 
@@ -54,6 +54,12 @@ read_config () {
 }
 
 update () {
+	if [ "$disclose_identity" -eq 1 ] && [ -n "$twturl" ];then
+		user_agent="txtnish/$VERSION (+${twturl}; @${nick:-$USER})"
+	else
+		user_agent="txtnish/$VERSION (+https://github.com/mdom/txtnish)"
+	fi
+
 	## TODO check return code of xargs and do something with it
 	urls | xargs -n1 -P20 wget --user-agent="$user_agent" --timestamping -P ~/.cache/txtnish/ -x -q
 }
