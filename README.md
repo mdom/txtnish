@@ -27,67 +27,67 @@ to call them with the `-h` option.
 
 # Subcommands
 
-* tweet
+## tweet
 
-  Appends a new tweet to your twtxt file. There are three different ways
+Appends a new tweet to your twtxt file. There are three different ways
 to input tweets. You can either pipe them into tweet, or pass them along
 as arguments. When you call `txtnish tweet` without any arguments and
 it's not connected to a pipe, it wall call `$EDITOR` for you and tweet
 any line as seperate tweet.
 
-* timeline
+## timeline
 
-  Retrieves your personal timeline.
+Retrieves your personal timeline.
 
-* publish
+## publish
 
-  Publishes your twtfile. This is especially helpful after you changed your
+Publishes your twtfile. This is especially helpful after you changed your
 `post_tweet_hook`.
 
-* view
+## view
 
-  Shows the timeline of a single source.
+Shows the timeline of a single source.
 
-* follow
+## follow
 
-  Adds a new source to your followings.
+Adds a new source to your followings.
 
-* unfollow
+## unfollow
 
-  Removes an existing source from your followings.
+Removes an existing source from your followings.
 
-* following
+## following
 
-  Print the list of the sources you're following.
+Print the list of the sources you're following.
 
-* reply
+## reply
 
-  Displays an outcommented version of your timeline in `$EDITOR`. Every
+Displays an outcommented version of your timeline in `$EDITOR`. Every
 line that is not commented after you saved and exited the editor, will
 be tweeted.
 
 # Options
 
-* -h
+## -h
 
-  Print a help message and exit.
+Print a help message and exit.
 
-* -p, -P
+## -p, -P
 
-  Enables or disables the use of a pager to display tweets.
+Enables or disables the use of a pager to display tweets.
 
-* -u, -U
+## -u, -U
 
-  Either runs a update before any command that displays tweets or just uses the
+Either runs a update before any command that displays tweets or just uses the
 cache.
 
-* -a, -d
+## -a, -d
 
-  Sort the timeline either in ascending or descending order.
+Sort the timeline either in ascending or descending order.
 
-* -l
+## -l NUM
 
-  Limits the number of shown tweets.
+Limits the number of shown tweets.
 
 # License
 
