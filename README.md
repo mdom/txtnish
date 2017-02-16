@@ -44,10 +44,6 @@ Retrieves your personal timeline.
 Publishes your twtfile. This is especially helpful after you changed your
 `post_tweet_hook`.
 
-## view
-
-Shows the timeline of a single source.
-
 ## follow
 
 Adds a new source to your followings.

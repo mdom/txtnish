@@ -202,9 +202,21 @@ twtfile_for () {
 	fi
 }
 
+in_list () {
+	case " $1 " in
+		*\ $2\ * ) return 0 ;;
+		* ) return 1 ;;
+	esac
+}
+
 timeline () {
 	maybe_update;
 	while read nick url;do
+
+		if [ $# -ne 0 ] && ! in_list "$*" "$nick";then
+			continue
+		fi
+
 		twtfile_for "$nick" "$url"
 		[ -e "$_twtfile_for" ] || continue
 		prefix_nick_url "$nick" "$url" < "$_twtfile_for"
@@ -280,21 +292,6 @@ expand_mentions () {
 			print
 		}
 	'
-}
-
-view () {
-	## TODO update only the single url
-	maybe_update;
-	_nick=$1
-	[ -n "$_nick" ] || usage "Required parameter NICK is missing."
-	while read nick url;do
-		if [ "$nick" = "$_nick" ] ;then
-			twtfile_for "$nick" "$url"
-			[ -e "$_twtfile_for" ] || continue
-			prefix_nick_url "$nick" "$url" < "$_twtfile_for" | display_tweets
-			return
-		fi
-	done < "$follow_file"
 }
 
 follow () {
@@ -407,7 +404,6 @@ usage_main () {
 		  Command:
 		    tweet          Append a new tweet to your twtxt file.
 		    timeline       Retrieve your personal timeline.
-		    view           Show feed of given source.
 		    follow         Add a new source to your followings.
 		    unfollow       Remove an existing source from your followings.
 		    following      Return the list of sources you're following.
@@ -528,8 +524,9 @@ case $mode in
 		options="h"
 		call_mode "$@"
 		;;
-	timeline )
-		synopsis="Retrieve your personal timeline."
+	timeline | view )
+		synopsis="Display timeline."
+		arguments="[NICK...]"
 		options="hl:adpPuUN:"
 		call_mode "$@"
 		;;
@@ -548,12 +545,6 @@ case $mode in
 		synopsis="Append a new tweet to your twtxt file."
 		arguments="[TWEET...]"
 		options="h"
-		call_mode "$@"
-		;;
-	view )
-		synopsis="Show feed of given source."
-		arguments="NICK"
-		options="hl:adpPuUN:"
 		call_mode "$@"
 		;;
 	* ) printf "Unknown mode $mode.\n" >&2; usage_main; exit 1;;
