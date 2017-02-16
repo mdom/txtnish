@@ -12,6 +12,7 @@ sort_order=descending
 twtfile=~/twtxt.txt
 disclose_identity=0
 http_backend=wget
+max_procs=20
 
 program_name=${0##*/}
 
@@ -87,7 +88,7 @@ update () {
 	while read nick url;do
 		$_get_args
 		i=$(( $i + 1 ))
-	done < "$follow_file" | xargs -d "\n" -n$_no_args -P20 "$http_backend" $http_backend_args
+	done < "$follow_file" | xargs -d "\n" -n$_no_args -P "$max_procs" "$http_backend" $http_backend_args
 	_http_rc=$?
 
 	cat "$log_dir"/http.log.* > "$log_dir/http.log"
@@ -386,6 +387,7 @@ call_mode () {
 			U ) always_update=0 ;;
 			a ) sort_order=ascending ;;
 			d ) sort_order=descending ;;
+			N ) max_procs="$OPTARG" ;;
 			: ) usage "Option -$OPTARG requires an argument." ;;
 			\? ) usage "Invalid option -$OPTARG." ;;
 		esac
@@ -453,6 +455,7 @@ EOF
 			P ) printf "  -P     Do not use pager to display content.\n" ;;
 			u ) printf "  -u     Update sources.\n" ;;
 			U ) printf "  -U     Do not update sources.\n" ;;
+			N ) printf "  -N NUM Use NUM parallel download processes.\n" ;;
 		esac
 		options=${options#?}
 	done
@@ -505,7 +508,7 @@ shift
 case $mode in
 	update )
 		synopsis="Fetching new twtfiles from all your sources."
-		options="h"
+		options="hN:"
 		call_mode "$@"
 		;;
 	follow )
@@ -527,13 +530,13 @@ case $mode in
 		;;
 	timeline )
 		synopsis="Retrieve your personal timeline."
-		options="hl:adpPuU"
+		options="hl:adpPuUN:"
 		call_mode "$@"
 		;;
 	reply )
 		synopsis="Reply to tweets."
 		arguments="[NICK]"
-		options="hl:aduU"
+		options="hl:aduUN:"
 		call_mode "$@"
 		;;
 	publish )
@@ -550,7 +553,7 @@ case $mode in
 	view )
 		synopsis="Show feed of given source."
 		arguments="NICK"
-		options="hl:adpPuU"
+		options="hl:adpPuUN:"
 		call_mode "$@"
 		;;
 	* ) printf "Unknown mode $mode.\n" >&2; usage_main; exit 1;;
