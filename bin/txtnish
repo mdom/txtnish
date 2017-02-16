@@ -14,11 +14,12 @@ disclose_identity=0
 
 program_name=${0##*/}
 
-config_dir="$HOME/.config/txtnish/"
+config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/txtnish/"
 config_file="$config_dir/config"
 follow_file="$config_dir/following"
 draft_file="$config_dir/draft"
-cache_dir="$HOME/.cache/txtnish/"
+
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/txtnish/"
 
 ## Colors
 csi="${ESC}["
