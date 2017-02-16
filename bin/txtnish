@@ -11,6 +11,7 @@ always_update=1
 sort_order=descending
 twtfile=~/twtxt.txt
 disclose_identity=0
+http_backend=wget
 
 program_name=${0##*/}
 
@@ -20,6 +21,7 @@ follow_file="$config_dir/following"
 draft_file="$config_dir/draft"
 
 cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/txtnish/"
+log_dir="$cache_dir/logs"
 
 ## Colors
 csi="${ESC}["
@@ -54,29 +56,52 @@ read_config () {
 	fi
 }
 
+args_for_wget () {
+	printf "%s\n" --user-agent "$user_agent" --timestamping -P "$cache_dir/" -x -nv -a "$log_dir/http.log.$i" "$url"
+}
+
+args_for_curl () {
+	printf "%s\n" --user-agent "$user_agent" -L --stderr "$log_dir/http.log.$i" -Ss -o "$cache_dir/$nick.txt" -z "$cache_dir/$nick.txt" "$url"
+}
+
+args_for_unknown () {
+	printf "%s\n" "$nick" "$url"
+}
+
 update () {
+	[ -f "$follow_file" ] || return
+
 	if [ "$disclose_identity" -eq 1 ] && [ -n "$twturl" ];then
 		user_agent="txtnish/$VERSION (+${twturl}; @${nick:-$USER})"
 	else
 		user_agent="txtnish/$VERSION (+https://github.com/mdom/txtnish)"
 	fi
 
-	## TODO check return code of xargs and do something with it
-	urls | xargs -n1 -P20 wget --user-agent="$user_agent" --timestamping -P ~/.cache/txtnish/ -x -q
+	case $http_backend in
+		wget ) _no_args=10; _get_args=args_for_wget ;;
+		curl ) _no_args=11; _get_args=args_for_curl ;;
+		*    ) _no_args=2;  _get_args=args_for_unknown ;;
+	esac
+
+	i=0
+	while read nick url;do
+		$_get_args
+		i=$(( $i + 1 ))
+	done < "$follow_file" | xargs -d "\n" -n$_no_args -P20 "$http_backend" $http_backend_args
+	_http_rc=$?
+
+	cat "$log_dir"/http.log.* > "$log_dir/http.log"
+	rm "$log_dir"/http.log.*
+
+	if [ "$_http_rc" -ne 0 ] ;then
+		printf "http_backend returned errors, see "$log_dir/wget.log" for details.\n" >&2
+	fi
 }
 
 maybe_update () {
 	if [ "$always_update" -eq 1 ];then
 		update
 	fi
-}
-
-urls () {
-	[ -f "$follow_file" ] || return
-	## i'm not using awk here as the number of urls is usually pretty short.
-	while read _ url;do
-		printf "%s\n" "$url"
-	done < "$follow_file"
 }
 
 format_msg () {
@@ -164,24 +189,24 @@ maybe_pager () {
 	fi
 }
 
-url_to_file () {
-	_twtfile=~/.cache/txtnish/${1#*://}
-	_twtfile=${_twtfile%%#*}
-	if [ -d "$_twtfile" ] && [ -e "$_twtfile/index.html" ];then
-		_twtfile="$_twtfile/index.html"
+twtfile_for () {
+	if [ "$http_backend" != wget ];then
+		_twtfile_for="$cache_dir/$nick.txt"
+	else
+		_twtfile_for=~/.cache/txtnish/${2#*://}
+		_twtfile_for=${_twtfile_for%%#*}
+		if [ -d "$_twtfile_for" ] && [ -e "$_twtfile_for/index.html" ];then
+			_twtfile_for="$_twtfile/index.html"
+		fi
 	fi
-	if ! [ -e "$_twtfile" ];then
-		_twtfile=
-	fi
-	_url_to_file="$_twtfile"
 }
 
 timeline () {
 	maybe_update;
 	while read nick url;do
-		url_to_file "$url"
-		[ -n "$_url_to_file" ] || continue
-		prefix_nick_url "$nick" "$url" "$_url_to_file"
+		twtfile_for "$nick" "$url"
+		[ -e "$_twtfile_for" ] || continue
+		prefix_nick_url "$nick" "$url" < "$_twtfile_for"
 	done < "$follow_file" | display_tweets
 }
 
@@ -189,7 +214,7 @@ prefix_nick_url () {
 	_nick=$1
 	_url=$2
 	_twtfile=$3
-	awk -vnick="$_nick" -vurl="$_url" 'BEGIN{OFS="\t"}{print nick,url,$0}' < "$_twtfile"
+	awk -vnick="$_nick" -vurl="$_url" 'BEGIN{OFS="\t"}{print nick,url,$0}'
 }
 
 display_tweets () {
@@ -263,9 +288,9 @@ view () {
 	[ -n "$_nick" ] || usage "Required parameter NICK is missing."
 	while read nick url;do
 		if [ "$nick" = "$_nick" ] ;then
-			url_to_file "$url"
-			[ -n "$_url_to_file" ] || continue
-			prefix_nick_url "$nick" "$url" "$_url_to_file" | display_tweets
+			twtfile_for "$nick" "$url"
+			[ -e "$_twtfile_for" ] || continue
+			prefix_nick_url "$nick" "$url" < "$_twtfile_for" | display_tweets
 			return
 		fi
 	done < "$follow_file"
@@ -391,6 +416,7 @@ usage_main () {
 		    -h      Print a help message and exit.
 		    -v      Print version and exit.
 		    -c FILE Specify a custom config file location.
+		    -B CMD  Specify which http backend to use, can be wget or curl.
 
 EOF
 	if [ -n "$1" ];then
@@ -445,11 +471,13 @@ trap cleanup EXIT
 
 create_dir "$config_dir"
 create_dir "$cache_dir"
+create_dir "$log_dir"
 
-while getopts ":hvc:" opt;do
+while getopts ":hvc:B:" opt;do
 	case $opt in
 		v ) printf "$VERSION\n"; exit 0  ;;
 		h ) usage_main ;;
+		B ) http_backend="$OPTARG" ;;
 		c )
 			config_file="$OPTARG"
 			if ! [ -e "$config_file" ];then
