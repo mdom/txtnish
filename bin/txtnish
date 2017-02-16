@@ -129,9 +129,9 @@ sort_tweets () {
 			}
 			mod = substr(ts,length(ts)-5,1)
 			if ( mod == "+" ) {
-				seconds += offset
-			} else {
 				seconds -= offset
+			} else {
+				seconds += offset
 			}
 			print seconds, fracsecs, $0
 		}
