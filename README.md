@@ -4,9 +4,9 @@ A twtxt client with minimal dependencies
 # Synopsis
 
 ```
-$ txtnix follow bob http://example.com/twtxt.txt
-$ txtnix tweet 'Hello twtxt world'
-$ txtnix timeline
+$ txtnish follow bob http://example.com/twtxt.txt
+$ txtnish tweet 'Hello twtxt world'
+$ txtnish timeline
 ```
 
 # Description
