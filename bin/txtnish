@@ -329,8 +329,9 @@ unfollow () {
 			printf "$nick $url\n";
 		fi
 	done < "$follow_file" > "$tempfile"
-	mv "$tempfile" "$follow_file"
-	if [ -z "$removed" ];then
+	if [ -n "$removed" ];then
+		mv "$tempfile" "$follow_file"
+	else
 		die "You're not following $old_nick."
 	fi
 }
