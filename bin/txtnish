@@ -230,8 +230,13 @@ prefix_nick_url () {
 	awk -vnick="$_nick" -vurl="$_url" 'BEGIN{OFS="\t"}{print nick,url,$0}'
 }
 
+filter_tweets () {
+	filter_expr="${filter_expr:-1}"
+	awk -F"\t" '{nick=$1; url=$2; ts=$3; msg=$4; if ('"$filter_expr"') { print } }'
+}
+
 display_tweets () {
-	remove_escape_seq | sort_tweets | limit | collapse_mentions | format_msg | maybe_pager
+	remove_escape_seq | sort_tweets | filter_tweets | limit | collapse_mentions | format_msg | maybe_pager
 }
 
 remove_escape_seq () {
@@ -385,6 +390,7 @@ call_mode () {
 			a ) sort_order=ascending ;;
 			d ) sort_order=descending ;;
 			N ) max_procs="$OPTARG" ;;
+			S ) filter_expr="$OPTARG" ;;
 			: ) usage "Option -$OPTARG requires an argument." ;;
 			\? ) usage "Invalid option -$OPTARG." ;;
 		esac
@@ -452,6 +458,7 @@ EOF
 			u ) printf "  -u     Update sources.\n" ;;
 			U ) printf "  -U     Do not update sources.\n" ;;
 			N ) printf "  -N NUM Use NUM parallel download processes.\n" ;;
+			S ) printf "  -S EXP Filter tweets\n" ;;
 		esac
 		options=${options#?}
 	done
@@ -527,13 +534,13 @@ case $mode in
 	timeline | view )
 		synopsis="Display timeline."
 		arguments="[NICK...]"
-		options="hl:adpPuUN:"
+		options="hl:adpPuUN:S:"
 		call_mode "$@"
 		;;
 	reply )
 		synopsis="Reply to tweets."
 		arguments="[NICK]"
-		options="hl:aduUN:"
+		options="hl:aduUN:S:"
 		call_mode "$@"
 		;;
 	publish )
