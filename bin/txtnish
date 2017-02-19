@@ -2,7 +2,7 @@
 
 VERSION="0.2"
 TAB=$(printf "\t")
-ESC="\033"
+
 limit=20
 formatter="fmt"
 use_pager=1
@@ -24,23 +24,10 @@ draft_file="$config_dir/draft"
 cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/txtnish/"
 log_dir="$cache_dir/logs"
 
-## Colors
-csi="${ESC}["
-reset="${csi}0m"
-black=0
-red=1
-green=2
-yellow=3
-blue=4
-magenta=5
-cyan=6
-white=7
-
-fg=3
-bg=4
-
-color_nick=$yellow
-color_time=$blue
+color_nick=yellow
+color_time=blue
+color_hashtag=cyan
+color_mention=yellow
 
 die () {
 	printf "$program_name: %s\n" "$1" >&2
@@ -106,11 +93,33 @@ maybe_update () {
 }
 
 format_msg () {
-	while read nick url ts msg;do
-		if [ "$use_color" -eq 1 ];then
-			nick="${csi}${fg}${color_nick}m${nick}${reset}"
-			ts="${csi}${fg}${color_time}m${ts}${reset}"
-		fi
+	awk -vuse_color="$use_color" -vnick="$color_nick" \
+	    -vhashtag="$color_hashtag" -vtime="$color_time" -vmention="$color_mention" '
+		BEGIN {
+			OFS=FS="\t"
+			csi = "\033["
+			reset = csi "0m"
+			fg = 3
+			bg = 4
+			colors["black"] = 0
+			colors["red"] = 1
+			colors["green"] = 2
+			colors["yellow"] = 3
+			colors["blue"] = 4
+			colors["magenta"] = 5
+			colors["cyan"] = 6
+			colors["white"] = 7
+		}
+	{
+		if ( use_color ) {
+			gsub(/#[[:alnum:]]+/, csi fg colors[hashtag] "m&" reset, $4)
+			gsub(/@[[:alnum:]]+/, csi fg colors[mention] "m&" reset, $4)
+			$1 = csi fg colors[nick] "m" $1 reset
+			$3 = csi fg colors[time] "m" $3 reset
+		}
+		print
+	}' \
+	| while read nick url ts msg;do
 		printf "* %b (%b)\n" "$nick" "$ts"
 		if type "$formatter" >/dev/null 2>&1;then
 			printf "%s\n" "$msg" | $formatter

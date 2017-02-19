@@ -111,6 +111,17 @@ Examples:
 txtnish timeline -S 'nick == "mdom" && msg ~ /#twtxt/'
 ```
 
+# Configuration
+
+## Colors
+
+```
+color_nick=yellow
+color_time=blue
+color_mention=cyan
+color_hashtag=yellow
+```
+
 # License
 
 Copyright 2017 Mario Domgoergen <mario@domgoergen.com>
