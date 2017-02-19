@@ -96,6 +96,21 @@ Sort the timeline either in ascending or descending order.
 
 Limits the number of shown tweets.
 
+## -S EXPR
+
+Search your timeline for tweets matching *EXPR*. The search expression is a awk conditional with four predefined variables:
+
+* msg: the message itself
+* url: the url of the twtfile
+* nick: this nick associated with the url
+* ts: the timestamp of the message
+
+Examples:
+
+```
+txtnish timeline -S 'nick == "mdom" && msg ~ /#twtxt/'
+```
+
 # License
 
 Copyright 2017 Mario Domgoergen <mario@domgoergen.com>
