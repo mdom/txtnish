@@ -13,6 +13,9 @@ twtfile=~/twtxt.txt
 disclose_identity=0
 http_backend=wget
 max_procs=20
+xargs_parallel=1
+editor=${EDITOR:-vi}
+pager=${PAGER:-less -R}
 
 program_name=${0##*/}
 
@@ -182,7 +185,7 @@ reply () {
 	else
 		timeline | sed -e 's/^/# /' -e 's/^# $//' > "$draft_file"
 	fi
-	"$EDITOR" "$draft_file"
+	$editor "$draft_file"
 	tempfile="$draft_file.$$"
 	sed -e '/^# /d' -e '/^[[:space:]]*$/d' "$draft_file" > "$tempfile"
 	mv "$tempfile" "$draft_file"
@@ -193,7 +196,7 @@ reply () {
 
 maybe_pager () {
 	if [ "$use_pager" -eq 1 ];then
-		${PAGER:-less}
+		$pager
 	else
 		cat
 	fi
