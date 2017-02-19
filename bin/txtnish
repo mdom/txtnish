@@ -111,11 +111,15 @@ maybe_update () {
 	fi
 }
 
-format_msg () {
-	awk -vuse_color="$use_color" -vnick="$color_nick" \
-	    -vhashtag="$color_hashtag" -vtime="$color_time" -vmention="$color_mention" '
+format_msg (){
+	if ! type "$formatter" >/dev/null 2>&1;then
+		formatter=cat
+	fi
+	export color_nick color_time color_hashtag color_mention use_color formatter
+	awk '
 		BEGIN {
-			OFS=FS="\t"
+			FS="\t"
+			ORS="\n\n"
 			csi = "\033["
 			reset = csi "0m"
 			fg = 3
@@ -130,23 +134,18 @@ format_msg () {
 			colors["white"] = 7
 		}
 	{
-		if ( use_color ) {
-			gsub(/#[[:alnum:]]+/, csi fg colors[hashtag] "m&" reset, $4)
-			gsub(/@[[:alnum:]]+/, csi fg colors[mention] "m&" reset, $4)
-			$1 = csi fg colors[nick] "m" $1 reset
-			$3 = csi fg colors[time] "m" $3 reset
+		nick=$1;url=$2;props=$3;ts=$4;msg=$5
+		if ( ENVIRON["use_color"] == 1 ) {
+			nick = csi fg colors[ENVIRON["color_nick"]] "m" nick reset
+			ts = csi fg colors[ENVIRON["color_time"]] "m" ts reset
+			gsub(/#[[:alnum:]]+/, csi fg colors[ENVIRON["color_hashtag"]] "m&" reset, msg)
+			gsub(/@[[:alnum:]]+/, csi fg colors[ENVIRON["color_mention"]] "m&" reset, msg)
 		}
-		print
-	}' \
-	| while read nick url ts msg;do
-		printf "* %b (%b)\n" "$nick" "$ts"
-		if type "$formatter" >/dev/null 2>&1;then
-			printf "%s\n" "$msg" | $formatter
-		else
-			printf "%s\n" "$msg"
-		fi
-		printf "\n"
-	done
+		fmt = ENVIRON["formatter"]
+		printf "* %s (%s) [%s]\n", nick, ts, props
+		print msg | fmt
+		close(fmt)
+	}'
 }
 
 limit () {
@@ -168,8 +167,8 @@ sort_tweets () {
 
 	awk -F"$TAB" '
 		BEGIN { OFS=FS; OFMT="%f" }
-		$3 && $4 {
-			ts=$3
+		$4 && $5 {
+			ts=$4
 			sub(/Z$/,"+00:00",ts)
 			no_fields = split(ts,ta,/[T:+.-]/)
 			seconds = (ta[1]-1970)*31557600 + ta[2] * 2628000 + ta[3] * 86400 + ta[4] * 3600 + ta[5] * 60 + ta[6]
@@ -234,17 +233,26 @@ timeline () {
 		fi
 
 		[ -e "$cache_dir/twtfiles/$nick.txt" ] || continue
-		prefix_nick_url "$nick" "$url" < "$cache_dir/twtfiles/$nick.txt"
+
+		gpg_status="$(gpg --status-fd=1 --no-verbose --quiet --batch --output - --verify "$cache_dir/twtfiles/$nick.txt" 2>/dev/null)"
+		case $gpg_status in
+			*NODATA*   ) prop=gpg_unsigned ;;
+			*NOPUBKEY* ) prop=gpg_signed ;;
+			*VALIDSIG* ) prop=gpg_trusted ;;
+			*          ) prop=gpg_unknown ;;
+		esac
+
+		prefix_columns "$nick" "$url" "$prop" < "$cache_dir/twtfiles/$nick.txt"
 	done < "$follow_file" | display_tweets
 }
 
-prefix_nick_url () {
-	awk -vnick="$1" -vurl="$2" 'BEGIN{OFS="\t"}{print nick,url,$0}'
+prefix_columns () {
+	awk -vnick="$1" -vurl="$2" -vprops="$3" 'BEGIN{OFS="\t"}{print nick,url,props,$0}'
 }
 
 filter_tweets () {
 	filter_expr="${filter_expr:-1}"
-	awk -F"\t" '{nick=$1; url=$2; ts=$3; msg=$4; if ('"$filter_expr"') { print } }'
+	awk -F"\t" '{nick=$1;url=$2;props=$3;ts=$4;msg=$5; if ('"$filter_expr"') { print } }'
 }
 
 display_tweets () {
@@ -268,9 +276,9 @@ collapse_mentions () {
 		}
 		{
 			new_msg=""
-			while ( match($4,/@<[^>]+>/) ) {
-				new_msg = new_msg substr($4,1,RSTART-1)
-				n = split(substr($4,RSTART+2,RLENGTH-3),fields," ")
+			while ( match($5,/@<[^>]+>/) ) {
+				new_msg = new_msg substr($5,1,RSTART-1)
+				n = split(substr($5,RSTART+2,RLENGTH-3),fields," ")
 				if ( n == 1 ) {
 					url = fields[1]
 				} else {
@@ -280,12 +288,12 @@ collapse_mentions () {
 					new_msg = new_msg "@" urls[url]
 				}
 				else {
-					new_msg = new_msg substr($4,RSTART,RLENGTH)
+					new_msg = new_msg substr($5,RSTART,RLENGTH)
 				}
-				$4 = substr($4,RSTART+RLENGTH)
+				$5 = substr($5,RSTART+RLENGTH)
 			}
-			new_msg = new_msg $4
-			$4=new_msg
+			new_msg = new_msg $5
+			$5=new_msg
 			print
 		}
 	'
