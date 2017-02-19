@@ -48,11 +48,11 @@ read_config () {
 }
 
 args_for_wget () {
-	printf "%s\n" --user-agent "$user_agent" --timestamping -P "$cache_dir/" -x -nv -a "$log_dir/http.log.$i" "$url"
+	printf "%s\n" --user-agent "$user_agent" --timestamping -P "$cache_dir/wget/" -x -nv -a "$log_dir/http.log.$i" "$url"
 }
 
 args_for_curl () {
-	printf "%s\n" --user-agent "$user_agent" -L --stderr "$log_dir/http.log.$i" -Ss -o "$cache_dir/$nick.txt" -z "$cache_dir/$nick.txt" "$url"
+	printf "%s\n" --user-agent "$user_agent" -L --stderr "$log_dir/http.log.$i" -Ss -o "$cache_dir/twtfiles/$nick.txt" -z "$cache_dir/twtfiles/$nick.txt" "$url"
 }
 
 args_for_unknown () {
@@ -69,7 +69,10 @@ update () {
 	fi
 
 	case $http_backend in
-		wget ) _no_args=10; _get_args=args_for_wget ;;
+		wget )
+			create_dir "$cache_dir/wget/"
+			_no_args=10; _get_args=args_for_wget
+			;;
 		curl ) _no_args=11; _get_args=args_for_curl ;;
 		*    ) _no_args=2;  _get_args=args_for_unknown ;;
 	esac
@@ -83,6 +86,19 @@ update () {
 
 	cat "$log_dir"/http.log.* > "$log_dir/http.log"
 	rm "$log_dir"/http.log.*
+
+	if [ "$http_backend" = "wget" ];then
+		while read nick url;do
+			_twtfile="$cache_dir/wget/${url#*://}"
+			_twtfile=${_twtfile%%#*}
+			if [ -d "$_twtfile" ] && [ -e "$_twtfile/index.html" ];then
+				_twtfile="$_twtfile/index.html"
+			fi
+			if [ -e "$_twtfile" ];then
+				ln -sf "$_twtfile" "$cache_dir/twtfiles/$nick.txt"
+			fi
+		done < "$follow_file"
+	fi
 
 	if [ "$_http_rc" -ne 0 ] ;then
 		printf "http_backend returned errors, see "$log_dir/wget.log" for details.\n" >&2
@@ -202,18 +218,6 @@ maybe_pager () {
 	fi
 }
 
-twtfile_for () {
-	if [ "$http_backend" != wget ];then
-		_twtfile_for="$cache_dir/$nick.txt"
-	else
-		_twtfile_for=~/.cache/txtnish/${2#*://}
-		_twtfile_for=${_twtfile_for%%#*}
-		if [ -d "$_twtfile_for" ] && [ -e "$_twtfile_for/index.html" ];then
-			_twtfile_for="$_twtfile/index.html"
-		fi
-	fi
-}
-
 in_list () {
 	case " $1 " in
 		*\ $2\ * ) return 0 ;;
@@ -229,17 +233,13 @@ timeline () {
 			continue
 		fi
 
-		twtfile_for "$nick" "$url"
-		[ -e "$_twtfile_for" ] || continue
-		prefix_nick_url "$nick" "$url" < "$_twtfile_for"
+		[ -e "$cache_dir/twtfiles/$nick.txt" ] || continue
+		prefix_nick_url "$nick" "$url" < "$cache_dir/twtfiles/$nick.txt"
 	done < "$follow_file" | display_tweets
 }
 
 prefix_nick_url () {
-	_nick=$1
-	_url=$2
-	_twtfile=$3
-	awk -vnick="$_nick" -vurl="$_url" 'BEGIN{OFS="\t"}{print nick,url,$0}'
+	awk -vnick="$1" -vurl="$2" 'BEGIN{OFS="\t"}{print nick,url,$0}'
 }
 
 filter_tweets () {
@@ -490,6 +490,7 @@ trap cleanup EXIT
 
 create_dir "$config_dir"
 create_dir "$cache_dir"
+create_dir "$cache_dir/twtfiles/"
 create_dir "$log_dir"
 
 while getopts ":hvc:B:" opt;do
