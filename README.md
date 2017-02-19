@@ -25,6 +25,17 @@ utilities.
 All subcommand of *txtnish* provides extensive help, so don't hesitate
 to call them with the `-h` option.
 
+# Installation
+
+*txtnish* only depends on tools you normally find in a posix environment:
+awk, sort, cut and sh. There are only two exceptions: You either need
+to have curl or wget installed in order to download twtxt files. And you
+need a xargs that support parallel processing via *-P*. You can use a xargs
+without, but then txtnish falls back to downloading one url after another.
+
+Installation itself is as easy as it gets: Just copy the script somewhere
+in your *PATH*.
+
 # Subcommands
 
 ## tweet
