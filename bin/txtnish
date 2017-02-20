@@ -1,7 +1,6 @@
 #!/bin/sh
 
 VERSION="0.2"
-TAB=$(printf "\t")
 
 ###################
 ## Default config #
@@ -164,8 +163,8 @@ sort_tweets () {
 		die "Unknown sort_order '$sort_order'. Must be either ascending or descending."
 	fi
 
-	awk -F"$TAB" '
-		BEGIN { OFS=FS; OFMT="%f" }
+	awk '
+		BEGIN { OFS=FS="\t"; OFMT="%f" }
 		$4 && $5 {
 			ts=$4
 			sub(/Z$/,"+00:00",ts)
@@ -187,7 +186,7 @@ sort_tweets () {
 			}
 			print seconds, fracsecs, $0
 		}
-	' | sort $_sort_switches -n -k1,2 | cut -d "$TAB" -f 3-
+	' | sort $_sort_switches -n -k1,2 | cut -f 3-
 }
 
 maybe_pager () {
