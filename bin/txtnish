@@ -56,11 +56,26 @@ read_config () {
 }
 
 args_for_wget () {
-	printf "%s\n" --user-agent "$user_agent" --timestamping -P "$cache_dir/wget/" -x -nv -a "$log_dir/http.log.$i" "$url"
+	printf "%s\n" \
+		--user-agent "$user_agent" \
+		--timestamping \
+		--directory-prefix "$cache_dir/wget/" \
+		--force-directories \
+		--no-verbose \
+		--append-output "$log_dir/http.log.$i" \
+		"$url"
 }
 
 args_for_curl () {
-	printf "%s\n" --user-agent "$user_agent" -L --stderr "$log_dir/http.log.$i" -Ss -o "$cache_dir/twtfiles/$nick.txt" -z "$cache_dir/twtfiles/$nick.txt" "$url"
+	printf "%s\n" \
+		--user-agent "$user_agent" \
+		--location \
+		--stderr "$log_dir/http.log.$i" \
+		--show-error \
+		--silent \
+		--output "$cache_dir/twtfiles/$nick.txt" \
+		--time-cond "$cache_dir/twtfiles/$nick.txt" \
+		"$url"
 }
 
 args_for_unknown () {
@@ -299,7 +314,7 @@ update () {
 			create_dir "$cache_dir/wget/"
 			_no_args=10; _get_args=args_for_wget
 			;;
-		curl ) _no_args=11; _get_args=args_for_curl ;;
+		curl ) _no_args=12; _get_args=args_for_curl ;;
 		*?*  ) _no_args=2;  _get_args=args_for_unknown ;;
 		*    ) die "Missing http_backend. Please install wget or curl.\n"
 	esac
