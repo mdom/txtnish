@@ -40,24 +40,44 @@ log_dir="$cache_dir/logs"
 ## Helper Functions #
 #####################
 
+# Description: Check if command is in path
+# Synopsis: have_cmd COMMAND
+# Returns: success if command is found; fails otherwise
+
 have_cmd () {
 	type "$1" >/dev/null 2>&1
 }
+
+# Description: Print error message and exit
+# Synopsis: die MESSAGE RETURN_CODE
+# Returns: nothing
 
 die () {
 	printf "$program_name: %s\n" "$1" >&2
 	exit "${2:-1}"
 }
 
+# Description: Create dir unless it exists
+# Synopsis: create_dir DIR
+# Returns: nothing
+
 create_dir () {
 	[ -d "$1" ] || mkdir -p "$1"
 }
+
+# Description: Source configuration file if it exists
+# Synopsis: read_config
+# Returns: nothing
 
 read_config () {
 	if [ -e "$config_file" ];then
 		. "$config_file"
 	fi
 }
+
+# Description: Print arguments for wget on stdout for xargs
+# Synopsis: args_for_wget NICK URL COUNTER
+# Returns: Nothing
 
 args_for_wget () {
 	printf "%s\n" \
@@ -70,6 +90,10 @@ args_for_wget () {
 		"$2"
 }
 
+# Description: Print arguments for curl on stdout for xargs
+# Synopsis: args_for_curl NICK URL COUNTER
+# Returns: Nothing
+
 args_for_curl () {
 	printf "%s\n" \
 		--user-agent "$user_agent" \
@@ -81,6 +105,11 @@ args_for_curl () {
 		--time-cond "$cache_dir/twtfiles/$1" \
 		"$2"
 }
+
+
+# Description: Print arguments for generic http backend on stdout for xargs
+# Synopsis: args_for_curl NICK URL COUNTER
+# Returns: Nothing
 
 args_for_generic () {
 	printf "%s\n" "$1" "$2"
