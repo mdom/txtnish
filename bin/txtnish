@@ -11,7 +11,7 @@ always_update=1
 sort_order=descending
 twtfile=~/twtxt.txt
 disclose_identity=0
-http_backend=wget
+http_backend=curl
 max_procs=20
 xargs_parallel=1
 editor=${EDITOR:-vi}
@@ -31,6 +31,14 @@ color_nick=yellow
 color_time=blue
 color_hashtag=cyan
 color_mention=yellow
+
+have_cmd () {
+	type "$1" >/dev/null 2>&1
+}
+
+if ! have_cmd curl && have_cmd wget;then
+	http_backend=wget
+fi
 
 die () {
 	printf "$program_name: %s\n" "$1" >&2
@@ -74,7 +82,8 @@ update () {
 			_no_args=10; _get_args=args_for_wget
 			;;
 		curl ) _no_args=11; _get_args=args_for_curl ;;
-		*    ) _no_args=2;  _get_args=args_for_unknown ;;
+		*?*  ) _no_args=2;  _get_args=args_for_unknown ;;
+		*    ) die "Missing http_backend. Please install wget or curl.\n"
 	esac
 
 	i=0
@@ -112,7 +121,7 @@ maybe_update () {
 }
 
 format_msg (){
-	if ! type "$formatter" >/dev/null 2>&1;then
+	if ! have_cmd "$formatter" ;then
 		formatter=cat
 	fi
 	export color_nick color_time color_hashtag color_mention use_color formatter
@@ -249,7 +258,7 @@ timeline () {
 	maybe_update;
 
 	have_gpg=0
-	if type gpg >/dev/null 2>&1;then
+	if have_cmd gpg ;then
 		have_gpg=1
 	fi
 
