@@ -82,7 +82,7 @@ args_for_curl () {
 		"$2"
 }
 
-args_for_unknown () {
+args_for_generic () {
 	printf "%s\n" "$1" "$2"
 }
 
@@ -319,7 +319,7 @@ update () {
 			_no_args=10; _get_args=args_for_wget
 			;;
 		curl ) _no_args=12; _get_args=args_for_curl ;;
-		*?*  ) _no_args=2;  _get_args=args_for_unknown ;;
+		*?*  ) _no_args=2;  _get_args=args_for_generic ;;
 		*    ) die "Missing http_backend. Please install wget or curl.\n"
 	esac
 
