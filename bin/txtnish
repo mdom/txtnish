@@ -136,8 +136,8 @@ format_msg (){
 
 			nick = csi fg colors[ENVIRON["color_nick"]] "m" nick reset
 			ts = csi fg colors[ENVIRON["color_time"]] "m" ts reset
-			gsub(/#[[:alnum:]]+/, csi fg colors[ENVIRON["color_hashtag"]] "m&" reset, msg)
-			gsub(/@[[:alnum:]]+/, csi fg colors[ENVIRON["color_mention"]] "m&" reset, msg)
+			gsub(/#[[:alnum:]_]+/, csi fg colors[ENVIRON["color_hashtag"]] "m&" reset, msg)
+			gsub(/@[[:alnum:]_]+/, csi fg colors[ENVIRON["color_mention"]] "m&" reset, msg)
 		}
 		fmt = ENVIRON["formatter"]
 		printf "* %s (%s) [%s]\n", nick, ts, props
