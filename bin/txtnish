@@ -343,14 +343,15 @@ update () {
 	fi
 
 	case $http_backend in
-		wget )
-			create_dir "$cache_dir/wget/"
-			_no_args=10; _get_args=args_for_wget
+		wget )  create_dir "$cache_dir/wget/"
+			_get_args=args_for_wget
 			;;
-		curl ) _no_args=12; _get_args=args_for_curl ;;
-		*?*  ) _no_args=2;  _get_args=args_for_generic ;;
-		*    ) die "Missing http_backend. Please install wget or curl.\n"
+		curl )  _get_args=args_for_curl ;;
+		*?*  )  _get_args=args_for_generic ;;
+		*    )  die "Missing http_backend. Please install wget or curl.\n"
 	esac
+
+	_no_args=$( $_get_args | wc -l )
 
 	i=0
 	while read nick url;do
