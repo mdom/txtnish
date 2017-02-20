@@ -133,9 +133,26 @@ format_msg (){
 			colors["cyan"] = 6
 			colors["white"] = 7
 		}
+
+		function colorize ( layer, color, text ) {
+			return csi layer colors[color] "m" text reset
+		}
+
 	{
 		nick=$1;url=$2;props=$3;ts=$4;msg=$5
 		if ( ENVIRON["use_color"] == 1 ) {
+			n = split(props,prop_array,/,/)
+			props=""
+			for ( i in prop_array ) {
+				if ( prop_array[i] == "tls" || prop_array[i] == "gpg_trusted" ) {
+					prop_array[i] = colorize(fg,"green",prop_array[i])
+				}
+			}
+
+			props = prop_array[1]
+			for (i = 2; i <= n; i++)
+				props = props "," prop_array[i]
+
 			nick = csi fg colors[ENVIRON["color_nick"]] "m" nick reset
 			ts = csi fg colors[ENVIRON["color_time"]] "m" ts reset
 			gsub(/#[[:alnum:]]+/, csi fg colors[ENVIRON["color_hashtag"]] "m&" reset, msg)
@@ -224,8 +241,18 @@ in_list () {
 	esac
 }
 
+gpg_verify () {
+	gpg --status-fd=1 --no-verbose --quiet --batch --output - --verify "$cache_dir/twtfiles/$1.txt" 2>/dev/null
+}
+
 timeline () {
 	maybe_update;
+
+	have_gpg=0
+	if type gpg >/dev/null 2>&1;then
+		have_gpg=1
+	fi
+
 	while read nick url;do
 
 		if [ $# -ne 0 ] && ! in_list "$*" "$nick";then
@@ -234,12 +261,19 @@ timeline () {
 
 		[ -e "$cache_dir/twtfiles/$nick.txt" ] || continue
 
-		gpg_status="$(gpg --status-fd=1 --no-verbose --quiet --batch --output - --verify "$cache_dir/twtfiles/$nick.txt" 2>/dev/null)"
-		case $gpg_status in
-			*NODATA*   ) prop=gpg_unsigned ;;
-			*NOPUBKEY* ) prop=gpg_signed ;;
-			*VALIDSIG* ) prop=gpg_trusted ;;
-			*          ) prop=gpg_unknown ;;
+		if [ "$have_gpg" -eq 1 ];then
+			gpg_status="$(gpg_verify "$nick")"
+			case $gpg_status in
+				*NODATA*   ) prop=gpg_unsigned ;;
+				*NOPUBKEY* ) prop=gpg_signed ;;
+				*VALIDSIG* ) prop=gpg_trusted ;;
+				*          ) prop=gpg_unknown ;;
+			esac
+		fi
+
+		case $url in
+			https://* ) prop="${prop:+$prop,}tls" ;;
+			* ) prop="${prop:+$prop,}notls" ;;
 		esac
 
 		prefix_columns "$nick" "$url" "$prop" < "$cache_dir/twtfiles/$nick.txt"
