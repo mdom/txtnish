@@ -66,24 +66,24 @@ args_for_wget () {
 		--directory-prefix "$cache_dir/wget/" \
 		--force-directories \
 		--no-verbose \
-		--append-output "$log_dir/http.log.$i" \
-		"$url"
+		--append-output "$log_dir/http.log.$3" \
+		"$2"
 }
 
 args_for_curl () {
 	printf "%s\n" \
 		--user-agent "$user_agent" \
 		--location \
-		--stderr "$log_dir/http.log.$i" \
+		--stderr "$log_dir/http.log.$3" \
 		--show-error \
 		--silent \
-		--output "$cache_dir/twtfiles/$nick.txt" \
-		--time-cond "$cache_dir/twtfiles/$nick.txt" \
-		"$url"
+		--output "$cache_dir/twtfiles/$1" \
+		--time-cond "$cache_dir/twtfiles/$1" \
+		"$2"
 }
 
 args_for_unknown () {
-	printf "%s\n" "$nick" "$url"
+	printf "%s\n" "$1" "$2"
 }
 
 maybe_update () {
@@ -325,7 +325,7 @@ update () {
 
 	i=0
 	while read nick url;do
-		$_get_args
+		$_get_args "$nick" "$url" "$i"
 		i=$(( $i + 1 ))
 	done < "$follow_file" | xargs -d "\n" -n$_no_args -P "$max_procs" "$http_backend" $http_backend_args
 	_http_rc=$?
