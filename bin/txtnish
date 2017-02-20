@@ -478,11 +478,19 @@ call_mode () {
 			d ) sort_order=descending ;;
 			N ) max_procs="$OPTARG" ;;
 			S ) filter_expr="$OPTARG" ;;
+			c )
+				config_file="$OPTARG"
+				if ! [ -e "$config_file" ];then
+					die "Missing configuration file '$config_file'";
+				fi
+				;;
+			B ) http_backend="$OPTARG" ;;
 			: ) usage "Option -$OPTARG requires an argument." ;;
 			\? ) usage "Invalid option -$OPTARG." ;;
 		esac
 	done
 	shift $(( OPTIND - 1 ))
+	read_config
 	$mode "$@"
 }
 
@@ -506,8 +514,6 @@ usage_main () {
 		  Options:
 		    -h      Print a help message and exit.
 		    -v      Print version and exit.
-		    -c FILE Specify a custom config file location.
-		    -B CMD  Specify which http backend to use, can be wget or curl.
 
 EOF
 	if [ -n "$1" ];then
@@ -546,6 +552,8 @@ EOF
 			U ) printf "  -U     Do not update sources.\n" ;;
 			N ) printf "  -N NUM Use NUM parallel download processes.\n" ;;
 			S ) printf "  -S EXP Filter tweets\n" ;;
+			B ) printf "  -B ARG Specify which http backend to use (wget or curl).\n" ;;
+			c ) printf "  -c CFG Specify a custom config file location.\n" ;;
 		esac
 		options=${options#?}
 	done
@@ -571,21 +579,12 @@ while getopts ":hvc:B:" opt;do
 	case $opt in
 		v ) printf "$VERSION\n"; exit 0  ;;
 		h ) usage_main ;;
-		B ) http_backend="$OPTARG" ;;
-		c )
-			config_file="$OPTARG"
-			if ! [ -e "$config_file" ];then
-				die "Missing configuration file '$config_file'";
-			fi
-			;;
 		: ) usage_main "Option -$OPTARG requires an argument." ;;
 		\? ) usage_main "Invalid option -$OPTARG." ;;
 	esac
 done
 
 shift $(($OPTIND - 1))
-
-read_config
 
 mode=$1
 
@@ -599,47 +598,47 @@ shift
 case $mode in
 	update )
 		synopsis="Fetching new twtfiles from all your sources."
-		options="hN:"
+		options="chN:B:"
 		call_mode "$@"
 		;;
 	follow )
 		synopsis="Add a new source to your followings."
 		arguments="NICK SOURCE"
-		options="h"
+		options="ch"
 		call_mode "$@"
 		;;
 	unfollow )
 		synopsis="Remove an existing source from your followings."
 		arguments="NICK"
-		options="h"
+		options="ch"
 		call_mode "$@"
 		;;
 	following )
 		synopsis="Return the list of sources you're following."
-		options="h"
+		options="ch"
 		call_mode "$@"
 		;;
 	timeline | view )
 		synopsis="Display timeline."
 		arguments="[NICK...]"
-		options="hl:adpPuUN:S:"
+		options="chl:adpPuUN:S:B:"
 		call_mode "$@"
 		;;
 	reply )
 		synopsis="Reply to tweets."
 		arguments="[NICK]"
-		options="hl:aduUN:S:"
+		options="chl:aduUN:S:B:"
 		call_mode "$@"
 		;;
 	publish )
 		synopsis="Publish your twtfile."
-		options="h"
+		options="ch"
 		call_mode "$@"
 		;;
 	tweet )
 		synopsis="Append a new tweet to your twtxt file."
 		arguments="[TWEET...]"
-		options="h"
+		options="ch"
 		call_mode "$@"
 		;;
 	* ) printf "Unknown mode $mode.\n" >&2; usage_main; exit 1;;
