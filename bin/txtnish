@@ -3,6 +3,10 @@
 VERSION="0.2"
 TAB=$(printf "\t")
 
+###################
+## Default config #
+###################
+
 limit=20
 formatter="fmt"
 use_pager=1
@@ -16,29 +20,30 @@ max_procs=20
 xargs_parallel=1
 editor=${EDITOR:-vi}
 pager=${PAGER:-less -R}
-
-program_name=${0##*/}
-
-config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/txtnish/"
-config_file="$config_dir/config"
-follow_file="$config_dir/following"
-draft_file="$config_dir/draft"
-
-cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/txtnish/"
-log_dir="$cache_dir/logs"
-
 color_nick=yellow
 color_time=blue
 color_hashtag=cyan
 color_mention=yellow
 
+######################
+## Runtime variables #
+######################
+
+program_name=${0##*/}
+config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/txtnish/"
+config_file="$config_dir/config"
+follow_file="$config_dir/following"
+draft_file="$config_dir/draft"
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/txtnish/"
+log_dir="$cache_dir/logs"
+
+#####################
+## Helper Functions #
+#####################
+
 have_cmd () {
 	type "$1" >/dev/null 2>&1
 }
-
-if ! have_cmd curl && have_cmd wget;then
-	http_backend=wget
-fi
 
 die () {
 	printf "$program_name: %s\n" "$1" >&2
@@ -568,12 +573,20 @@ EOF
 	fi
 }
 
+#########
+## Main #
+#########
+
 trap cleanup EXIT
 
 create_dir "$config_dir"
 create_dir "$cache_dir"
 create_dir "$cache_dir/twtfiles/"
 create_dir "$log_dir"
+
+if ! have_cmd curl && have_cmd wget;then
+	http_backend=wget
+fi
 
 while getopts ":hvc:B:" opt;do
 	case $opt in
