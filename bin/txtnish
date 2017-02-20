@@ -67,53 +67,6 @@ args_for_unknown () {
 	printf "%s\n" "$nick" "$url"
 }
 
-update () {
-	[ -f "$follow_file" ] || return
-
-	if [ "$disclose_identity" -eq 1 ] && [ -n "$twturl" ];then
-		user_agent="txtnish/$VERSION (+${twturl}; @${nick:-$USER})"
-	else
-		user_agent="txtnish/$VERSION (+https://github.com/mdom/txtnish)"
-	fi
-
-	case $http_backend in
-		wget )
-			create_dir "$cache_dir/wget/"
-			_no_args=10; _get_args=args_for_wget
-			;;
-		curl ) _no_args=11; _get_args=args_for_curl ;;
-		*?*  ) _no_args=2;  _get_args=args_for_unknown ;;
-		*    ) die "Missing http_backend. Please install wget or curl.\n"
-	esac
-
-	i=0
-	while read nick url;do
-		$_get_args
-		i=$(( $i + 1 ))
-	done < "$follow_file" | xargs -d "\n" -n$_no_args -P "$max_procs" "$http_backend" $http_backend_args
-	_http_rc=$?
-
-	cat "$log_dir"/http.log.* > "$log_dir/http.log"
-	rm "$log_dir"/http.log.*
-
-	if [ "$http_backend" = "wget" ];then
-		while read nick url;do
-			_twtfile="$cache_dir/wget/${url#*://}"
-			_twtfile=${_twtfile%%#*}
-			if [ -d "$_twtfile" ] && [ -e "$_twtfile/index.html" ];then
-				_twtfile="$_twtfile/index.html"
-			fi
-			if [ -e "$_twtfile" ];then
-				ln -sf "$_twtfile" "$cache_dir/twtfiles/$nick.txt"
-			fi
-		done < "$follow_file"
-	fi
-
-	if [ "$_http_rc" -ne 0 ] ;then
-		printf "http_backend returned errors, see "$log_dir/wget.log" for details.\n" >&2
-	fi
-}
-
 maybe_update () {
 	if [ "$always_update" -eq 1 ];then
 		update
@@ -217,24 +170,6 @@ sort_tweets () {
 	' | sort $_sort_switches -n -k1,2 | cut -d "$TAB" -f 3-
 }
 
-reply () {
-	maybe_update
-	use_pager=0
-	use_color=0
-	if [ -n "$1" ];then
-		view "$1" | sed -e 's/^/# /' -e 's/^# $//' > "$draft_file"
-	else
-		timeline | sed -e 's/^/# /' -e 's/^# $//' > "$draft_file"
-	fi
-	$editor "$draft_file"
-	tempfile="$draft_file.$$"
-	sed -e '/^# /d' -e '/^[[:space:]]*$/d' "$draft_file" > "$tempfile"
-	mv "$tempfile" "$draft_file"
-	if [ -s "$draft_file" ];then
-		draft_to_twtfile
-	fi
-}
-
 maybe_pager () {
 	if [ "$use_pager" -eq 1 ];then
 		$pager
@@ -248,45 +183,6 @@ in_list () {
 		*\ $2\ * ) return 0 ;;
 		* ) return 1 ;;
 	esac
-}
-
-gpg_verify () {
-	gpg --status-fd=1 --no-verbose --quiet --batch --output - --verify "$cache_dir/twtfiles/$1.txt" 2>/dev/null
-}
-
-timeline () {
-	maybe_update;
-
-	have_gpg=0
-	if have_cmd gpg ;then
-		have_gpg=1
-	fi
-
-	while read nick url;do
-
-		if [ $# -ne 0 ] && ! in_list "$*" "$nick";then
-			continue
-		fi
-
-		[ -e "$cache_dir/twtfiles/$nick.txt" ] || continue
-
-		if [ "$have_gpg" -eq 1 ];then
-			gpg_status="$(gpg_verify "$nick")"
-			case $gpg_status in
-				*NODATA*   ) prop=gpg_unsigned ;;
-				*NOPUBKEY* ) prop=gpg_signed ;;
-				*VALIDSIG* ) prop=gpg_trusted ;;
-				*          ) prop=gpg_unknown ;;
-			esac
-		fi
-
-		case $url in
-			https://* ) prop="${prop:+$prop,}tls" ;;
-			* ) prop="${prop:+$prop,}notls" ;;
-		esac
-
-		prefix_columns "$nick" "$url" "$prop" < "$cache_dir/twtfiles/$nick.txt"
-	done < "$follow_file" | display_tweets
 }
 
 prefix_columns () {
@@ -304,6 +200,10 @@ display_tweets () {
 
 remove_escape_seq () {
 	sed 's/[^[:print:][:space:]]//g'
+}
+
+gpg_verify () {
+	gpg --status-fd=1 --no-verbose --quiet --batch --output - --verify "$cache_dir/twtfiles/$1.txt" 2>/dev/null
 }
 
 collapse_mentions () {
@@ -362,6 +262,77 @@ expand_mentions () {
 	'
 }
 
+draft_to_twtfile () {
+	_fracsecs=0
+	_timestamp=$(TZ=C date "+%Y-%m-%dT%H:%M:%S.%%06iZ")
+	while read msg;do
+		[ -n "$msg" ] || continue
+		printf "$_timestamp\t%s\n" "$_fracsecs" "$msg"
+		_fracsecs=$(( $_fracsecs + 1 ))
+	done < "$draft_file" | expand_mentions >> "$twtfile"
+	publish
+}
+
+cleanup () {
+	[ -e "$tempfile" ] && rm "$tempfile"
+}
+
+post_tweet_hook () {
+	:
+}
+
+################
+## Subcommands #
+################
+
+update () {
+	[ -f "$follow_file" ] || return
+
+	if [ "$disclose_identity" -eq 1 ] && [ -n "$twturl" ];then
+		user_agent="txtnish/$VERSION (+${twturl}; @${nick:-$USER})"
+	else
+		user_agent="txtnish/$VERSION (+https://github.com/mdom/txtnish)"
+	fi
+
+	case $http_backend in
+		wget )
+			create_dir "$cache_dir/wget/"
+			_no_args=10; _get_args=args_for_wget
+			;;
+		curl ) _no_args=11; _get_args=args_for_curl ;;
+		*?*  ) _no_args=2;  _get_args=args_for_unknown ;;
+		*    ) die "Missing http_backend. Please install wget or curl.\n"
+	esac
+
+	i=0
+	while read nick url;do
+		$_get_args
+		i=$(( $i + 1 ))
+	done < "$follow_file" | xargs -d "\n" -n$_no_args -P "$max_procs" "$http_backend" $http_backend_args
+	_http_rc=$?
+
+	cat "$log_dir"/http.log.* > "$log_dir/http.log"
+	rm "$log_dir"/http.log.*
+
+	if [ "$http_backend" = "wget" ];then
+		while read nick url;do
+			_twtfile="$cache_dir/wget/${url#*://}"
+			_twtfile=${_twtfile%%#*}
+			if [ -d "$_twtfile" ] && [ -e "$_twtfile/index.html" ];then
+				_twtfile="$_twtfile/index.html"
+			fi
+			if [ -e "$_twtfile" ];then
+				ln -sf "$_twtfile" "$cache_dir/twtfiles/$nick.txt"
+			fi
+		done < "$follow_file"
+	fi
+
+	if [ "$_http_rc" -ne 0 ] ;then
+		printf "http_backend returned errors, see "$log_dir/wget.log" for details.\n" >&2
+	fi
+}
+
+
 follow () {
 	new_nick=$1
 	new_url=$2
@@ -418,29 +389,66 @@ tweet () {
 	draft_to_twtfile
 }
 
+reply () {
+	maybe_update
+	use_pager=0
+	use_color=0
+	if [ -n "$1" ];then
+		view "$1" | sed -e 's/^/# /' -e 's/^# $//' > "$draft_file"
+	else
+		timeline | sed -e 's/^/# /' -e 's/^# $//' > "$draft_file"
+	fi
+	$editor "$draft_file"
+	tempfile="$draft_file.$$"
+	sed -e '/^# /d' -e '/^[[:space:]]*$/d' "$draft_file" > "$tempfile"
+	mv "$tempfile" "$draft_file"
+	if [ -s "$draft_file" ];then
+		draft_to_twtfile
+	fi
+}
 
-draft_to_twtfile () {
-	_fracsecs=0
-	_timestamp=$(TZ=C date "+%Y-%m-%dT%H:%M:%S.%%06iZ")
-	while read msg;do
-		[ -n "$msg" ] || continue
-		printf "$_timestamp\t%s\n" "$_fracsecs" "$msg"
-		_fracsecs=$(( $_fracsecs + 1 ))
-	done < "$draft_file" | expand_mentions >> "$twtfile"
-	publish
+timeline () {
+	maybe_update;
+
+	have_gpg=0
+	if have_cmd gpg ;then
+		have_gpg=1
+	fi
+
+	while read nick url;do
+
+		if [ $# -ne 0 ] && ! in_list "$*" "$nick";then
+			continue
+		fi
+
+		[ -e "$cache_dir/twtfiles/$nick.txt" ] || continue
+
+		if [ "$have_gpg" -eq 1 ];then
+			gpg_status="$(gpg_verify "$nick")"
+			case $gpg_status in
+				*NODATA*   ) prop=gpg_unsigned ;;
+				*NOPUBKEY* ) prop=gpg_signed ;;
+				*VALIDSIG* ) prop=gpg_trusted ;;
+				*          ) prop=gpg_unknown ;;
+			esac
+		fi
+
+		case $url in
+			https://* ) prop="${prop:+$prop,}tls" ;;
+			* ) prop="${prop:+$prop,}notls" ;;
+		esac
+
+		prefix_columns "$nick" "$url" "$prop" < "$cache_dir/twtfiles/$nick.txt"
+	done < "$follow_file" | display_tweets
 }
 
 publish () {
 	post_tweet_hook
 }
 
-cleanup () {
-	[ -e "$tempfile" ] && rm "$tempfile"
-}
-
-post_tweet_hook () {
-	:
-}
+########################
+# Command line parsing #
+########################
 
 call_mode () {
 	while getopts ":$options" opt;do
