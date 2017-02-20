@@ -222,7 +222,7 @@ remove_escape_seq () {
 }
 
 gpg_verify () {
-	gpg --status-fd=1 --no-verbose --quiet --batch --output - --verify "$cache_dir/twtfiles/$1.txt" 2>/dev/null
+	gpg --status-fd=1 --no-verbose --quiet --batch --verify "$cache_dir/twtfiles/$1.txt" 2>/dev/null
 }
 
 collapse_mentions () {
