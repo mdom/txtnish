@@ -86,7 +86,7 @@ args_for_wget () {
 		--directory-prefix "$cache_dir/wget/" \
 		--force-directories \
 		--no-verbose \
-		--append-output "$log_dir/http.log.$3" \
+		--append-output "$log_dir/http.log.$1" \
 		"$2"
 }
 
@@ -98,7 +98,7 @@ args_for_curl () {
 	printf "%s\n" \
 		--user-agent "$user_agent" \
 		--location \
-		--stderr "$log_dir/http.log.$3" \
+		--stderr "$log_dir/http.log.$1" \
 		--show-error \
 		--silent \
 		--output "$cache_dir/twtfiles/$1" \
@@ -353,15 +353,16 @@ update () {
 
 	_no_args=$( $_get_args | wc -l )
 
-	i=0
 	while read nick url;do
-		$_get_args "$nick" "$url" "$i"
-		i=$(( $i + 1 ))
+		$_get_args "$nick" "$url"
 	done < "$follow_file" | xargs -d "\n" -n$_no_args -P "$max_procs" "$http_backend" $http_backend_args
 	_http_rc=$?
 
-	cat "$log_dir"/http.log.* > "$log_dir/http.log"
-	rm "$log_dir"/http.log.*
+	for logfile in "$log_dir"/http.log.*;do
+		nick="${logfile##*.}"
+		awk -vnick="$nick" '{print nick ": " $0 }' "$logfile"
+		rm "$logfile"
+	done > "$log_dir"/http.log
 
 	if [ "$http_backend" = "wget" ];then
 		while read nick url;do
@@ -377,7 +378,7 @@ update () {
 	fi
 
 	if [ "$_http_rc" -ne 0 ] ;then
-		printf "http_backend returned errors, see "$log_dir/wget.log" for details.\n" >&2
+		printf "http_backend returned errors, see $log_dir/http.log for details.\n" >&2
 	fi
 }
 
