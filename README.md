@@ -116,6 +116,10 @@ txtnish timeline -S 'nick == "mdom" && msg ~ /#twtxt/'
 *txtnish* provides two backends to retrieve files via http. You can
 either use *wget* or *curl*. The default is curl.
 
+It's possible to specify any command as backend. The command should
+take two paramters, the nick and url, and saves the twtfile at
+`$cache_dir/twtfiles/$nick.txt`.
+
 # Configuration
 
 At startup txtnish checks for `~/.config/txtnish/config` exists and
