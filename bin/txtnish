@@ -215,7 +215,7 @@ sort_tweets () {
 			}
 			print seconds, fracsecs, $0
 		}
-	' | sort $_sort_switches -n -k1,2 | cut -f 3-
+	' | sort -rn -k1,2 | limit | sort $_sort_switches -k1,2 | cut -f 3-
 }
 
 maybe_pager () {
@@ -243,7 +243,7 @@ filter_tweets () {
 }
 
 display_tweets () {
-	remove_escape_seq | sort_tweets | filter_tweets | limit | collapse_mentions | format_msg | maybe_pager
+	remove_escape_seq | filter_tweets | sort_tweets | collapse_mentions | format_msg | maybe_pager
 }
 
 remove_escape_seq () {
