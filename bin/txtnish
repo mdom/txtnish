@@ -101,7 +101,7 @@ args_for_curl () {
 		--stderr "$log_dir/http.log.$1" \
 		--show-error \
 		--silent \
-		--output "$cache_dir/twtfiles/$1" \
+		--output "$cache_dir/twtfiles/$1.txt" \
 		--time-cond "$cache_dir/twtfiles/$1" \
 		"$2"
 }
