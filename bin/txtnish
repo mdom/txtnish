@@ -496,6 +496,35 @@ publish () {
 	post_tweet_hook
 }
 
+quickstart () {
+	if [ -e "$config_file" ] && [ -e "$follow_file" ];then
+		die "Configuration already exists. Exiting.";
+	fi
+
+	if [ -e "${XDG_CONFIG_HOME:-$HOME/.config}/twtxt/config" ];then
+		if ! [ -e "$follow_file" ];then
+			twtxt following | awk '{ print $1, $3 }' > "$follow_file"
+		fi
+
+		if ! [ -e "$config_file" ];then
+			nick=$(twtxt config get nick)
+			twturl=$(twtxt config get twturl)
+			limit=$(twtxt config get limit_timeline)
+			twtfile=$(twtxt config get twtfile)
+			sort_order=$(twtxt config get sorting)
+
+			{
+				[ -n "$nick" ]       && printf "nick=$nick\n"
+				[ -n "$twturl" ]     && printf "twturl=$twturl\n"
+				[ -n "$limit" ]      && printf "limit=$limit\n"
+				[ -n "$twtfile" ]    && printf "twtfile=$twtfile\n"
+				[ -n "$sort_order" ] && printf "sort_order=$sort_order\n"
+
+			} > "$config_file"
+		fi
+	fi
+}
+
 ########################
 # Command line parsing #
 ########################
@@ -682,6 +711,11 @@ case $mode in
 	tweet )
 		synopsis="Append a new tweet to your twtxt file."
 		arguments="[TWEET...]"
+		options="h"
+		call_mode "$@"
+		;;
+	quickstart )
+		synopsis="Import settings from twtxt."
 		options="h"
 		call_mode "$@"
 		;;
