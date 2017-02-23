@@ -111,7 +111,32 @@ Examples:
 txtnish timeline -S 'nick == "mdom" && msg ~ /#twtxt/'
 ```
 
+## -B BACKEND
+
+*txtnish* provides two backends to retrieve files via http. You can
+either use *wget* or *curl*. The default is curl.
+
 # Configuration
+
+At startup txtnish checks for `~/.config/txtnish/config` exists and
+will source it if is exists. The configuration file must be a valid
+shell script.
+
+## General
+
+### limit
+
+How many tweets should be shown in timeline. Default to 20.
+
+### use_color
+
+If the output should be colorized with ansi escape sequences. See the
+section *COLORS* how to change the color settings. Default to 1.
+
+### pager
+
+Which pager to use if use_pager is enabled. Default to `less -R` in
+order to display colors.
 
 ## Colors
 
@@ -120,6 +145,22 @@ color_nick=yellow
 color_time=blue
 color_mention=cyan
 color_hashtag=yellow
+```
+
+## Hooks
+
+To customize the behaviour of txtnish the user can override functions.
+
+### post_tweet_hook
+
+post_tweet_hook is called after txtnish has appended new tweets to your
+twtfile. It's a good place to uploade your file somewhere.
+
+```
+tempfile="$twtfile.$$"
+gpg --clearsign --output "$tempfile" "$twtfile"
+curl -nT "$tempfile" "ftp://bob@example.com/bob.txt"
+gist -u ID -f "$tempfile"
 ```
 
 # License
