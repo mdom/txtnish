@@ -329,6 +329,20 @@ post_tweet_hook () {
 	:
 }
 
+read_key () {
+	_key=$(dd bs=1 count=1 2>/dev/null)
+}
+
+prompt () {
+	printf "%s [yN] " "$1"
+	read_key
+	case $_key in
+		y ) _rc=0 ;;
+		* ) _rc=1 ;;
+	esac
+	return $_rc
+}
+
 ################
 ## Subcommands #
 ################
@@ -497,16 +511,13 @@ publish () {
 }
 
 quickstart () {
-	if [ -e "$config_file" ] && [ -e "$follow_file" ];then
-		die "Configuration already exists. Exiting.";
-	fi
-
 	if [ -e "${XDG_CONFIG_HOME:-$HOME/.config}/twtxt/config" ];then
-		if ! [ -e "$follow_file" ];then
+		if ! [ -e "$follow_file" ] && prompt "Import followings from twtxt?" ;then
+
 			twtxt following | awk '{ print $1, $3 }' > "$follow_file"
 		fi
 
-		if ! [ -e "$config_file" ];then
+		if ! [ -e "$config_file" ] && primpt "Import settings from twtxt?" ;then
 			nick=$(twtxt config get nick)
 			twturl=$(twtxt config get twturl)
 			limit=$(twtxt config get limit_timeline)
