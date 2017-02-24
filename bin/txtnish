@@ -534,6 +534,11 @@ quickstart () {
 			} > "$config_file"
 		fi
 	fi
+
+	if prompt "Import urls to follow we-are-twtx?" ;then
+		curl -Ss https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt | \
+			xargs -n2 txtnish follow
+	fi
 }
 
 ########################
