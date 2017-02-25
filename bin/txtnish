@@ -531,6 +531,9 @@ publish () {
 	if [ -n "$scp_user" ] && [ -n "$scp_host" ];then
 		scp "$twtfile" "$scp_user"@"$scp_host":"${scp_remote_name:-${twtfile##*/}}"
 	fi
+	if [ -n "$ftp_user" ] && [ -n "$ftp_host" ];then
+		curl -nT "$twtfile" ftp://"$ftp_user"@"$ftp_host"/"${ftp_remote_name:-${twtfile##*/}}"
+	fi
 	post_tweet_hook
 }
 
@@ -581,6 +584,11 @@ quickstart () {
 		getline "Pleaser enter scp host" scp_host
 	fi
 
+	if yesno "Do you want to upload your twtfile with ftp?";then
+		getline "Please enter your ftp username" ftp_user
+		getline "Pleaser enter ftp host" ftp_host
+	fi
+
 	if yesno "Write configuration to $config_file?";then
 		if [ -e "$config_file" ];then
 			mv "$config_file" "$config_file.bak"
@@ -596,6 +604,12 @@ EOF
 			cat <<-EOF >> "$config_file"
 				scp_user="$scp_user"
 				scp_host="$scp_host"
+EOF
+		fi
+		if [ -n "$ftp_user" ] && [ -n "$ftp_host" ];then
+			cat <<-EOF >> "$config_file"
+				ftp_user="$ftp_user"
+				ftp_host="$ftp_host"
 EOF
 		fi
 		printf "Write new configuration to $config_file\n"
