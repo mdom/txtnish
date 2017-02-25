@@ -25,6 +25,13 @@ utilities.
 All subcommand of *txtnish* provides extensive help, so don't hesitate
 to call them with the `-h` option.
 
+If you are a new user, there is a quickstart command that will ask you some
+questions and write a configuration file for you:
+
+```
+$ txtnish quickstart
+```
+
 # Installation
 
 *txtnish* only depends on tools you normally find in a posix environment:
