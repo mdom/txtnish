@@ -330,10 +330,18 @@ post_tweet_hook () {
 }
 
 read_key () {
-	_key=$(dd bs=1 count=1 2>/dev/null)
+	_key=
+	if [ -t 0 ];then
+		if [ -z "$_stty" ];then
+			_stty=$(stty -g)
+		fi
+		stty -echo -icanon min 1
+		_key=$(dd bs=1 count=1 2>/dev/null)
+		stty "$_stty"
+	fi
 }
 
-prompt () {
+yesno () {
 	printf "%s [yN] " "$1"
 	read_key
 	case $_key in
@@ -512,7 +520,7 @@ publish () {
 
 quickstart () {
 	if [ -e "${XDG_CONFIG_HOME:-$HOME/.config}/twtxt/config" ];then
-		if ! [ -e "$follow_file" ] && prompt "Import followings from twtxt?" ;then
+		if ! [ -e "$follow_file" ] && yesno "Import followings from twtxt?" ;then
 
 			twtxt following | awk '{ print $1, $3 }' > "$follow_file"
 		fi
@@ -535,7 +543,7 @@ quickstart () {
 		fi
 	fi
 
-	if prompt "Import urls to follow we-are-twtx?" ;then
+	if yesno "Import urls to follow we-are-twtx?" ;then
 		curl -Ss https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt | \
 			xargs -n2 txtnish follow
 	fi
