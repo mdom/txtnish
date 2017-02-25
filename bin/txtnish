@@ -564,7 +564,9 @@ quickstart () {
 	getline "Please enter your desired nick" nick
 	getline "Please enter the desired location for your twtxt file" twtfile
 	getline "Please enter the URL your twtxt file will be accessible from" twturl
-	yesno "Do you want to disclose your identity? Your nick and URL will be shared when making HTTP requests?" disclose_identity
+	if yesno "Do you want to disclose your identity? Your nick and URL will be shared when making HTTP requests?";then
+		disclose_identity=1
+	fi
 
 	if yesno "Import urls to follow we-are-twtx?" ;then
 		curl -Ss https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt | \
