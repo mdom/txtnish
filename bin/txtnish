@@ -341,6 +341,18 @@ read_key () {
 	fi
 }
 
+getline () {
+	_var=${2:-_line}
+	if [ -t 0 ];then
+		if [ -n "$BASH_VERSION" ];then
+			read -ep "$1: " $_var
+		else
+			printf "%s: " "$1"
+			IFS= read -r $_var
+		fi
+	fi
+}
+
 yesno () {
 	printf "%s [yN] " "$1"
 	read_key
@@ -348,6 +360,7 @@ yesno () {
 		y ) _rc=0 ;;
 		* ) _rc=1 ;;
 	esac
+	printf "\n"
 	return $_rc
 }
 
@@ -519,6 +532,9 @@ publish () {
 }
 
 quickstart () {
+
+	## Import settings from twtxt
+
 	if [ -e "${XDG_CONFIG_HOME:-$HOME/.config}/twtxt/config" ];then
 		if ! [ -e "$follow_file" ] && yesno "Import followings from twtxt?" ;then
 
@@ -543,10 +559,33 @@ quickstart () {
 		fi
 	fi
 
+	## Quickstart for new users
+
+	getline "Please enter your desired nick" nick
+	getline "Please enter the desired location for your twtxt file" twtfile
+	getline "Please enter the URL your twtxt file will be accessible from" twturl
+	yesno "Do you want to disclose your identity? Your nick and URL will be shared when making HTTP requests?" disclose_identity
+
 	if yesno "Import urls to follow we-are-twtx?" ;then
 		curl -Ss https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt | \
 			xargs -n2 txtnish follow
 	fi
+
+	if yesno "Write configuration to $config_file?";then
+		if [ -e "$config_file" ];then
+			mv "$config_file" "$config_file.bak"
+			printf "Backup old config to $config_file.bak\n"
+		fi
+		cat <<-EOF > "$config_file"
+			nick="$nick"
+			twturl="$twturl"
+			twtfile="$twtfile"
+			disclose_identity="$disclose_identity"
+EOF
+		printf "Write new configuration to $config_file\n"
+	fi
+
+
 }
 
 ########################
