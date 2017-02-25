@@ -528,6 +528,9 @@ timeline () {
 }
 
 publish () {
+	if [ -n "$scp_user" ] && [ -n "$scp_host" ];then
+		scp "$twtfile" "$scp_user"@"$scp_host":
+	fi
 	post_tweet_hook
 }
 
@@ -573,6 +576,11 @@ quickstart () {
 			xargs -n2 txtnish follow
 	fi
 
+	if yesno "Do you want to upload your twtfile with scp?";then
+		getline "Please enter your scp username" scp_user
+		getline "Pleaser enter scp host" scp_host
+	fi
+
 	if yesno "Write configuration to $config_file?";then
 		if [ -e "$config_file" ];then
 			mv "$config_file" "$config_file.bak"
@@ -584,6 +592,12 @@ quickstart () {
 			twtfile="$twtfile"
 			disclose_identity="$disclose_identity"
 EOF
+		if [ -n "$scp_user" ] && [ -n "$scp_host" ];then
+			cat <<-EOF >> "$config_file"
+				scp_user="$scp_user"
+				scp_host="$scp_host"
+EOF
+		fi
 		printf "Write new configuration to $config_file\n"
 	fi
 
