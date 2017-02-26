@@ -196,6 +196,8 @@ Name of twtfile on remote host. Defaults to the basename of the twtfile.
 
 Publish the twtfile with ipfs if set to 1. Defaults to 0.
 
+You will need the ipfs tools and a running daemon to publish to ipfs.
+
 ### ipfs_wrap_with_dir
 
 Call ipfs add with --wrap-with-dir if set to 1. Defaults to 0.

@@ -550,7 +550,7 @@ timeline () {
 }
 
 publish () {
-	if [ "$ipfs_publish" -eq 1 ];then
+	if [ "$ipfs_publish" -eq 1 ] && have_cmd ipfs;then
 		_ipfs_path="$twtfile"
 		if [ "$ipfs_wrap_with_dir" -eq 1 ];then
 			_ipfs_args=-w
