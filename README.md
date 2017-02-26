@@ -156,6 +156,12 @@ overwriting the `post_tweet_hook` note that this will create a signed
 file in a temporary directory and change the value of `twtfile`
 accordingly. Defaults to 0.
 
+### ipfs_gateway
+
+When you subscribe to a ipns:// address, txtnish will call this gateway to get
+the users twtfile. Defaults to http://localhost:8080 and falls back to
+https://ipfs.io if txtnish can't reach the gateway.
+
 ## Publish with scp
 
 ### scp_user

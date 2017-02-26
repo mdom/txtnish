@@ -27,6 +27,7 @@ sign_twtfile=0
 ipfs_publish=0
 ipfs_wrap_with_dir=0
 ipfs_recursive=0
+ipfs_gateway=http://localhost:8080
 
 ######################
 ## Runtime variables #
@@ -117,6 +118,21 @@ args_for_curl () {
 
 args_for_generic () {
 	printf "%s\n" "$1" "$2"
+}
+
+rewrite_url () {
+	if [ -z "$_ipfs_checked" ];then
+		if ! curl -s "$ipfs_gateway" > /dev/null 2>&1 ;then
+			ipfs_gateway=https://ipfs.io
+		fi
+		_ipfs_checked=1
+	fi
+
+	case $url in
+		ipns://* )
+			url=$ipfs_gateway/ipns/${url#ipns://}
+		;;
+	esac
 }
 
 maybe_update () {
@@ -394,6 +410,7 @@ update () {
 	_no_args=$( $_get_args | wc -l )
 
 	while read nick url;do
+		rewrite_url
 		$_get_args "$nick" "$url"
 	done < "$follow_file" | xargs -d "\n" -n$_no_args -P "$max_procs" "$http_backend" $http_backend_args
 	_http_rc=$?
