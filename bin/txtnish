@@ -331,6 +331,7 @@ expand_mentions () {
 }
 
 draft_to_twtfile () {
+	[ -s "$draft_file" ] || return
 	_fracsecs=0
 	_timestamp=$(TZ=C date "+%Y-%m-%dT%H:%M:%S.%%06iZ")
 	while read msg;do
@@ -509,9 +510,7 @@ reply () {
 	tempfile="$draft_file.$$"
 	sed -e '/^# /d' -e '/^[[:space:]]*$/d' "$draft_file" > "$tempfile"
 	mv "$tempfile" "$draft_file"
-	if [ -s "$draft_file" ];then
-		draft_to_twtfile
-	fi
+	draft_to_twtfile
 }
 
 timeline () {
