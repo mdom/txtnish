@@ -559,7 +559,7 @@ publish () {
 			_ipfs_args="$ipfs_args -r"
 			_ipfs_path="${twtfile%/*}"
 		fi
-		if ipfs add -q $ipfs_args "$_ipfs_path" > "$cache_dir/ipfs";then
+		if ipfs add -q $_ipfs_args "$_ipfs_path" > "$cache_dir/ipfs";then
 			awk 'END{ print $1 }' "$cache_dir/ipfs" | xargs ipfs name publish
 		fi
 	fi
