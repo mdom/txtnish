@@ -224,10 +224,9 @@ post_tweet_hook is called after txtnish has appended new tweets to your
 twtfile. It's a good place to uploade your file somewhere.
 
 ```
-tempfile="$twtfile.$$"
-gpg --clearsign --output "$tempfile" "$twtfile"
-curl -nT "$tempfile" "ftp://bob@example.com/bob.txt"
-gist -u ID -f "$tempfile"
+post_tweet_hook () {
+	gist -u ID -f "$twtfile"
+}
 ```
 
 # License
