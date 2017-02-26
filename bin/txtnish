@@ -24,6 +24,9 @@ color_time=blue
 color_hashtag=cyan
 color_mention=yellow
 sign_twtfile=0
+ipfs_publish=0
+ipfs_wrap_with_dir=0
+ipfs_recursive=0
 
 ######################
 ## Runtime variables #
@@ -530,6 +533,19 @@ timeline () {
 }
 
 publish () {
+	if [ "$ipfs_publish" -eq 1 ];then
+		_ipfs_path="$twtfile"
+		if [ "$ipfs_wrap_with_dir" -eq 1 ];then
+			_ipfs_args=-w
+		fi
+		if [ "$ipfs_recursive" -eq 1 ];then
+			_ipfs_args="$ipfs_args -r"
+			_ipfs_path="${twtfile%/*}"
+		fi
+		if ipfs add -q $ipfs_args "$_ipfs_path" > "$cache_dir/ipfs";then
+			awk 'END{ print $1 }' "$cache_dir/ipfs" | xargs ipfs name publish
+		fi
+	fi
 	if [ "$sign_twtfile" -eq 1 ];then
 		if mkdir "$cache_dir/tmp.$$/";then
 			tempdir="$cache_dir/tmp.$$/"

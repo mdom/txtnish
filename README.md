@@ -184,6 +184,21 @@ Copy twtfile to this host. Required to publish with ftp.
 ### ftp_remote_name
 Name of twtfile on remote host. Defaults to the basename of the twtfile.
 
+## Publish with IPFS
+
+### ipfs_publish
+
+Publish the twtfile with ipfs if set to 1. Defaults to 0.
+
+### ipfs_wrap_with_dir
+
+Call ipfs add with --wrap-with-dir if set to 1. Defaults to 0.
+
+### ipfs_recursive
+
+Call ipfs add with --recursive if set to 1. The complete directory of
+your twtfile will be published. Defaults to 0.
+
 ## Colors
 
 ```
