@@ -149,6 +149,34 @@ section *COLORS* how to change the color settings. Default to 1.
 Which pager to use if use_pager is enabled. Default to `less -R` in
 order to display colors.
 
+## Publish with scp
+
+### scp_user
+
+Use the given username to connect to the remote server. Required to publish
+with scp.
+
+### scp_host
+
+Copy twtfile to this host. Required to publish with scp.
+
+### scp_remote_name
+
+Name of twtfile on remote host. Defaults to the basename of the twtfile.
+
+## Publish with ftp
+
+### ftp_user
+
+Use the given username to connect to the remote server. Required to publish
+with ftp.
+
+### ftp_host
+Copy twtfile to this host. Required to publish with ftp.
+
+### ftp_remote_name
+Name of twtfile on remote host. Defaults to the basename of the twtfile.
+
 ## Colors
 
 ```
