@@ -23,6 +23,7 @@ color_nick=yellow
 color_time=blue
 color_hashtag=cyan
 color_mention=yellow
+sign_twtfile=0
 
 ######################
 ## Runtime variables #
@@ -323,6 +324,7 @@ draft_to_twtfile () {
 
 cleanup () {
 	[ -e "$tempfile" ] && rm "$tempfile"
+	[ -d "$tempdir" ] && rm -r "$tempdir"
 }
 
 post_tweet_hook () {
@@ -528,6 +530,18 @@ timeline () {
 }
 
 publish () {
+	if [ "$sign_twtfile" -eq 1 ];then
+		if mkdir "$cache_dir/tmp.$$/";then
+			tempdir="$cache_dir/tmp.$$/"
+		else
+			die "Can't create temporary dir $tempdir"
+		fi
+		if gpg --clearsign --output "$tempdir/${twtfile##*/}" "$twtfile";then
+			twtfile="$tempdir/${twtfile##*/}"
+		else
+			die "Can't sign twtfile. Exiting";
+		fi
+	fi
 	if [ -n "$scp_user" ] && [ -n "$scp_host" ];then
 		scp "$twtfile" "$scp_user"@"$scp_host":"${scp_remote_name:-${twtfile##*/}}"
 	fi

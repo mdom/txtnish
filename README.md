@@ -149,6 +149,13 @@ section *COLORS* how to change the color settings. Default to 1.
 Which pager to use if use_pager is enabled. Default to `less -R` in
 order to display colors.
 
+### sign_twtfile
+
+If set to 1, sign the twtfile with pgp. In case you are also
+overwriting the `post_tweet_hook` note that this will create a signed
+file in a temporary directory and change the value of `twtfile`
+accordingly. Defaults to 0.
+
 ## Publish with scp
 
 ### scp_user
