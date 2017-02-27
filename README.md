@@ -120,12 +120,8 @@ txtnish timeline -S 'nick == "mdom" && msg ~ /#twtxt/'
 
 ## -B BACKEND
 
-*txtnish* provides two backends to retrieve files via http. You can
-either use *wget* or *curl*. The default is curl.
-
-It's possible to specify any command as backend. The command should
-take two paramters, the nick and url, and saves the twtfile at
-`$cache_dir/twtfiles/$nick.txt`.
+Which http backend to use. See documentation for the `http_backend`
+option for further details.
 
 # Configuration
 
@@ -148,6 +144,24 @@ section *COLORS* how to change the color settings. Default to 1.
 
 Which pager to use if use_pager is enabled. Default to `less -R` in
 order to display colors.
+
+### http_backend
+
+*txtnish* provides two backends to retrieve files via http. You can
+either use *wget* or *curl*. The default is curl.
+
+It's possible to specify any command as backend. The command should
+take two paramters, the nick and url, and saves the twtfile at
+`$cache_dir/twtfiles/$nick.txt`.
+
+### disclose_identity
+
+If set to 1, send your nick and twturl with every http request. Defaults to 0.
+
+### always_update
+
+Always update all feeds before showing tweets. If you set this variable
+to 0, you need to update manually with the update command.
 
 ### sign_twtfile
 
