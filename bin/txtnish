@@ -34,11 +34,11 @@ ipfs_gateway=http://localhost:8080
 ######################
 
 program_name=${0##*/}
-config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/txtnish/"
+config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/txtnish"
 config_file="$config_dir/config"
 follow_file="$config_dir/following"
 draft_file="$config_dir/draft"
-cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/txtnish/"
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/txtnish"
 log_dir="$cache_dir/logs"
 
 #####################
@@ -772,7 +772,7 @@ trap cleanup EXIT
 
 create_dir "$config_dir"
 create_dir "$cache_dir"
-create_dir "$cache_dir/twtfiles/"
+create_dir "$cache_dir/twtfiles"
 create_dir "$log_dir"
 
 if ! have_cmd curl && have_cmd wget;then
