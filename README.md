@@ -3,7 +3,7 @@ A twtxt client with minimal dependencies
 
 # Synopsis
 
-```
+```sh
 $ txtnish follow bob http://example.com/twtxt.txt
 $ txtnish tweet 'Hello twtxt world'
 $ txtnish timeline
@@ -28,7 +28,7 @@ to call them with the `-h` option.
 If you are a new user, there is a quickstart command that will ask you some
 questions and write a configuration file for you:
 
-```
+```sh
 $ txtnish quickstart
 ```
 
@@ -114,7 +114,7 @@ Search your timeline for tweets matching *EXPR*. The search expression is a awk 
 
 Examples:
 
-```
+```sh
 txtnish timeline -S 'nick == "mdom" && msg ~ /#twtxt/'
 ```
 
@@ -209,7 +209,7 @@ your twtfile will be published. Defaults to 0.
 
 ## Colors
 
-```
+```sh
 color_nick=yellow
 color_time=blue
 color_mention=cyan
@@ -225,7 +225,7 @@ To customize the behaviour of txtnish the user can override functions.
 post_tweet_hook is called after txtnish has appended new tweets to your
 twtfile. It's a good place to uploade your file somewhere.
 
-```
+```sh
 post_tweet_hook () {
 	gist -u ID -f "$twtfile"
 }
@@ -245,4 +245,4 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
-this program.  If not, see [http://www.gnu.org/licenses/].
+this program.  If not, see http://www.gnu.org/licenses/.
