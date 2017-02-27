@@ -245,6 +245,12 @@ post_tweet_hook () {
 }
 ```
 
+### filter_tweets_hook
+
+## See also
+
+[twtxt](https://github.com/buckket/twtxt), [we-are-twtxt](https://github.com/mdom/we-are-twtxt)
+
 # License
 
 Copyright 2017 Mario Domgoergen <mario@domgoergen.com>
