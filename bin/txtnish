@@ -214,7 +214,7 @@ sort_tweets () {
 
 	awk '
 		BEGIN { OFS=FS="\t"; OFMT="%f" }
-		$4 && $5 {
+		{
 			ts=$4
 			sub(/Z$/,"+00:00",ts)
 			no_fields = split(ts,ta,/[T:+.-]/)
@@ -263,11 +263,24 @@ filter_tweets () {
 }
 
 display_tweets () {
-	remove_escape_seq | filter_tweets | sort_tweets | collapse_mentions | format_msg | maybe_pager
+	normalize_tweets | filter_tweets | sort_tweets | collapse_mentions | format_msg | maybe_pager
 }
 
-remove_escape_seq () {
-	sed 's/[^[:print:][:space:]]//g'
+normalize_tweets () {
+	awk '
+		BEGIN{
+			FS=OFS="\t"
+		}
+		{
+			## remove escape sequences
+			gsub(/[^[:print:][:space:]]/,"")
+			## remove control characters from the msg
+			gsub(/[[:cntrl:]]/," ",$5)
+			## Only print if we have the right number of fields
+			if ( NF == 5 )
+				print
+		}
+	'
 }
 
 gpg_verify () {
