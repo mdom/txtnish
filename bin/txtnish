@@ -280,6 +280,7 @@ collapse_mentions () {
 		BEGIN {
 			FS=" "
 			while ( (getline < follow_file) > 0 ) {
+				sub(/^http:/,"https:",$2)
 				urls[$2]=$1
 			}
 			FS="\t"
@@ -295,6 +296,9 @@ collapse_mentions () {
 				} else {
 					url = fields[2]
 				}
+
+				sub(/^http:/,"https:",url)
+
 				if ( url in urls ) {
 					new_msg = new_msg "@" urls[url]
 				}
@@ -410,10 +414,10 @@ update () {
 
 	_no_args=$( $_get_args | wc -l )
 
-	while read nick url;do
+	sed -e 's/\s*#.*$//;/^\s*$/d' "$follow_file" | while read nick url;do
 		rewrite_url
 		$_get_args "$nick" "$url"
-	done < "$follow_file" | xargs -d "\n" -n$_no_args -P "$max_procs" "$http_backend" $http_backend_args
+	done | xargs -d "\n" -n$_no_args -P "$max_procs" "$http_backend" $http_backend_args
 	_http_rc=$?
 
 	for logfile in "$log_dir"/http.log.*;do
