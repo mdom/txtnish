@@ -165,10 +165,14 @@ to 0, you need to update manually with the update command.
 
 ### sign_twtfile
 
-If set to 1, sign the twtfile with pgp. In case you are also
-overwriting the `post_tweet_hook` note that this will create a signed
-file in a temporary directory and change the value of `twtfile`
-accordingly. Defaults to 0.
+If set to 1, sign the twtfile with pgp. Defaults to 0.
+
+In case you are also overwriting the `post_tweet_hook` note that this
+will create a signed file in a temporary directory and change the value of
+`twtfile` accordingly. Your twtfile will not be changed!
+
+Signing your twtfile might break some twtxt clients as lines without
+a *TAB* are not allowed by a strict reading of the spec.
 
 ### ipfs_gateway
 
