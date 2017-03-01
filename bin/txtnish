@@ -174,14 +174,14 @@ format_msg (){
 	{
 		nick=$1;url=$2;props=$3;ts=$4;msg=$5
 		seconds=now-ts
-		if ( seconds < 60 ) {
-			ts = seconds " seconds ago"
-		} else if ( seconds > 60 && seconds < 3600 ) {
-			ts = int(seconds / 60) " minutes ago"
-		} else if ( seconds > 3600 && seconds < 86400 ) {
-			ts = int(seconds / 3600) " hours ago"
-		} else {
+		if ( seconds >  86400 ) {
 			ts = int(seconds / 86400) " days ago"
+		} else if ( seconds > 3600 ) {
+			ts = int(seconds / 3600) " hours ago"
+		} else if ( seconds > 60 ) {
+			ts = int(seconds / 60) " minutes ago"
+		} else {
+			ts = seconds " seconds ago"
 		}
 
 		if ( ENVIRON["use_color"] == 1 ) {
