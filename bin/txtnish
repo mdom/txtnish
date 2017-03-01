@@ -455,7 +455,9 @@ yesno () {
 ################
 
 update () {
-	[ -f "$follow_file" ] || return
+	if ! [ -s "$follow_file" ] ;then
+		die "You're not following anyone."
+	fi
 
 	if [ "$disclose_identity" -eq 1 ] && [ -n "$twturl" ];then
 		user_agent="txtnish/$VERSION (+${twturl}; @${nick:-$USER})"
