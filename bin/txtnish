@@ -225,7 +225,11 @@ sort_tweets () {
 	esac
 
 	awk '
-		BEGIN { OFS=FS="\t"; }
+		BEGIN {
+			OFS=FS="\t";
+			srand()
+			now = srand()
+		}
 		{
 			ts=$4
 			no_fields = split(ts,ta,/[Tt:+.-]/)
@@ -261,7 +265,9 @@ sort_tweets () {
 				seconds_since_epoch += offset
 			}
 			$4 = seconds_since_epoch
-			print fracsecs, $0
+
+			if ( $4 <= now )
+				print fracsecs, $0
 		}
 	' | sort -rn -k5 -k1 | limit | sort -n $_sort_switches -k5 -k1 | cut -f 2-
 }
