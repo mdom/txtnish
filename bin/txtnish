@@ -206,7 +206,7 @@ limit () {
 
 sort_tweets () {
 	case $sort_order in
-		ascending  ) _sort_switches= ;;
+		ascending  ) _sort_switches="" ;;
 		descending ) _sort_switches=-r ;;
 		* ) die "Sort order must be either ascending or descending." ;;
 	esac
@@ -405,10 +405,10 @@ getline () {
 	_var=${2:-_line}
 	if [ -t 0 ];then
 		if [ -n "$BASH_VERSION" ];then
-			read -ep "$1: " $_var
+			read -ep "$1: " "$_var"
 		else
 			printf "%s: " "$1"
-			IFS= read -r $_var
+			IFS= read -r "$_var"
 		fi
 	fi
 }
