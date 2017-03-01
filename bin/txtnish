@@ -163,6 +163,8 @@ format_msg (){
 			colors["magenta"] = 5
 			colors["cyan"] = 6
 			colors["white"] = 7
+			srand()
+			now=srand()
 		}
 
 		function colorize ( layer, color, text ) {
@@ -171,6 +173,17 @@ format_msg (){
 
 	{
 		nick=$1;url=$2;props=$3;ts=$4;msg=$5
+		seconds=now-ts
+		if ( seconds < 60 ) {
+			ts = seconds " seconds ago"
+		} else if ( seconds > 60 && seconds < 3600 ) {
+			ts = int(seconds / 60) " minutes ago"
+		} else if ( seconds > 3600 && seconds < 86400 ) {
+			ts = int(seconds / 3600) " hours ago"
+		} else {
+			ts = int(seconds / 86400) " days ago"
+		}
+
 		if ( ENVIRON["use_color"] == 1 ) {
 			n = split(props,prop_array,/,/)
 			props=""
@@ -212,11 +225,13 @@ sort_tweets () {
 	esac
 
 	awk '
-		BEGIN { OFS=FS="\t"; OFMT="%f" }
+		BEGIN { OFS=FS="\t"; }
 		{
 			ts=$4
-			no_fields = split(ts,ta,/[T:+.-]/)
-			seconds = (ta[1]-1970)*31557600 + ta[2] * 2628000 + ta[3] * 86400 + ta[4] * 3600 + ta[5] * 60 + ta[6]
+			no_fields = split(ts,ta,/[Tt:+.-]/)
+			year = ta[1]; month  = ta[2]; day     = ta[3]
+			hour = ta[4]; minute = ta[5]; seconds = ta[6]
+
 			if ( no_fields == 9 ) {
 				offset = ta[8] * 3600 + ta[9] * 60
 				fracsecs=ta[7]
@@ -225,15 +240,30 @@ sort_tweets () {
 				offset = ta[7] * 3600 + ta[8] * 60
 				fracsecs=0
 			}
+			epoch_days = 719591
+
+			if ( month > 2 ) {
+				month++
+			} else {
+				year--
+				month+=13
+			}
+			tweet_days = (year*365)+int(year/4)-int(year/100)+int(year/400) + int(month*30.6)+ day
+
+			days_since_epoch = tweet_days - epoch_days
+
+			seconds_since_epoch = (days_since_epoch*86400)+(hour*3600)+(minute*60)+seconds
+
 			mod = substr(ts,length(ts)-5,1)
 			if ( mod == "+" ) {
-				seconds -= offset
+				seconds_since_epoch -= offset
 			} else {
-				seconds += offset
+				seconds_since_epoch += offset
 			}
-			print seconds, fracsecs, $0
+			$4 = seconds_since_epoch
+			print fracsecs, $0
 		}
-	' | sort -rn -k1,2 | limit | sort $_sort_switches -k1,2 | cut -f 3-
+	' | sort -rn -k5 -k1 | limit | sort $_sort_switches -k5 -k1 | cut -f 2-
 }
 
 maybe_pager () {
