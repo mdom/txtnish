@@ -217,7 +217,6 @@ sort_tweets () {
 		BEGIN { OFS=FS="\t"; OFMT="%f" }
 		{
 			ts=$4
-			sub(/Z$/,"+00:00",ts)
 			no_fields = split(ts,ta,/[T:+.-]/)
 			seconds = (ta[1]-1970)*31557600 + ta[2] * 2628000 + ta[3] * 86400 + ta[4] * 3600 + ta[5] * 60 + ta[6]
 			if ( no_fields == 9 ) {
@@ -271,14 +270,37 @@ normalize_tweets () {
 	awk '
 		BEGIN{
 			FS=OFS="\t"
+			rfc3339 = \
+				"^([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])" \
+				"[Tt]" \
+				"([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\\.[0-9]+)?" \
+				"(([Zz])|([\\+|\\-]([01][0-9]|2[0-3]):[0-5][0-9]))$"
 		}
 		{
 			## remove escape sequences
 			gsub(/[^[:print:][:space:]]/,"")
 			## remove control characters from the msg
 			gsub(/[[:cntrl:]]/," ",$5)
-			## Only print if we have the right number of fields
-			if ( NF == 5 )
+
+			#normlize timestamp
+			sub(/Z$/,"+00:00",$4)
+
+			# remove leading spaces
+			sub(/^[[:space:]]*/,"",$4)
+
+			# add : to offset if missing
+			if ( match($4,/[+-][0-9]{4}$/) ) {
+				l = length($4)
+				$4 = substr($4,1,l-4) substr($4,l-3,2) ":" substr($4,l-1,2)
+			}
+
+			## add seconds if missing
+			if ( match( $4,/T[0-9]{2}:[0-9]{2}[+-]/ ) ) {
+				$4 = substr($4,1,RSTART + RLENGTH -2) ":00" substr($4,RSTART + RLENGTH -1 )
+			}
+
+			# print if matching spec
+			if ( NF == 5 && $4 ~ rfc3339 )
 				print
 		}
 	'
