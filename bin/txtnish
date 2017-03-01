@@ -59,7 +59,7 @@ have_cmd () {
 # Returns: nothing
 
 die () {
-	printf "$program_name: %s\n" "$1" >&2
+	printf "%s: %s\n" "$program_name" "$1" >&2
 	exit "${2:-1}"
 }
 
@@ -371,10 +371,10 @@ expand_mentions () {
 draft_to_twtfile () {
 	[ -s "$draft_file" ] || return
 	_fracsecs=0
-	_timestamp=$(TZ=C date "+%Y-%m-%dT%H:%M:%S.%%06iZ")
+	_timestamp_fmt=$(TZ=C date "+%Y-%m-%dT%H:%M:%S.%%06iZ")
 	while read msg;do
 		[ -n "$msg" ] || continue
-		printf "$_timestamp\t%s\n" "$_fracsecs" "$msg"
+		printf "$_timestamp_fmt\t%s\n" "$_fracsecs" "$msg"
 		_fracsecs=$(( $_fracsecs + 1 ))
 	done < "$draft_file" | expand_mentions >> "$twtfile"
 	publish
@@ -474,7 +474,8 @@ update () {
 	fi
 
 	if [ "$_http_rc" -ne 0 ] ;then
-		printf "http_backend returned errors, see $log_dir/http.log for details.\n" >&2
+		printf "http_backend returned errors, see %s for details.\n" \
+			"$log_dir/http.log" >&2
 	fi
 }
 
@@ -491,9 +492,9 @@ follow () {
 		if [ "$nick" = "$new_nick" ] || [ "$url" = "$new_url" ];then
 			die "You're already following $nick at $url."
 		fi
-		printf "$nick $url\n";
+		printf "%s %s\n" "$nick" "$url";
 	done < "$follow_file" > "$tempfile"
-	printf "$new_nick $new_url\n" >> "$tempfile";
+	printf "%s %s\n" "$new_nick" "$new_url" >> "$tempfile";
 	mv "$tempfile" "$follow_file"
 }
 
@@ -506,7 +507,7 @@ unfollow () {
 		if [ "$nick" = "$old_nick" ];then
 			removed=1
 		else
-			printf "$nick $url\n";
+			printf "%s %s\n" "$nick" "$url";
 		fi
 	done < "$follow_file" > "$tempfile"
 	if [ -n "$removed" ];then
@@ -636,11 +637,11 @@ quickstart () {
 			sort_order=$(twtxt config get sorting)
 
 			{
-				[ -n "$nick" ]       && printf "nick=$nick\n"
-				[ -n "$twturl" ]     && printf "twturl=$twturl\n"
-				[ -n "$limit" ]      && printf "limit=$limit\n"
-				[ -n "$twtfile" ]    && printf "twtfile=$twtfile\n"
-				[ -n "$sort_order" ] && printf "sort_order=$sort_order\n"
+				[ -n "$nick" ]       && printf "nick=%s\n"       "$nick"
+				[ -n "$twturl" ]     && printf "twturl=%s\n"     "$twturl"
+				[ -n "$limit" ]      && printf "limit=%s\n"      "$limit"
+				[ -n "$twtfile" ]    && printf "twtfile=%s\n"    "$twtfile"
+				[ -n "$sort_order" ] && printf "sort_order=%s\n" "$sort_order"
 
 			} > "$config_file"
 		fi
@@ -673,7 +674,7 @@ quickstart () {
 	if yesno "Write configuration to $config_file?";then
 		if [ -e "$config_file" ];then
 			mv "$config_file" "$config_file.bak"
-			printf "Backup old config to $config_file.bak\n"
+			printf "Backup old config to %s.bak\n" "$config_file"
 		fi
 		cat <<-EOF > "$config_file"
 			nick="$nick"
@@ -693,7 +694,7 @@ EOF
 				ftp_host="$ftp_host"
 EOF
 		fi
-		printf "Write new configuration to $config_file\n"
+		printf "Write new configuration to %s\n" "$config_file"
 	fi
 
 
@@ -727,7 +728,7 @@ call_mode () {
 
 usage_main () {
 	if [ -n "$1" ];then
-		printf "$1\n" >&2;
+		printf "%s\n" "$1" >&2;
 		exec >&2
 	fi
 	cat <<-EOF
@@ -757,7 +758,7 @@ EOF
 usage () {
 	_err=$1
 	if [ -n "$_err" ];then
-		printf "$_err\n" >&2
+		printf "%s\n" "$_err" >&2
 		exec >&2
 	fi
 
@@ -816,7 +817,7 @@ fi
 
 while getopts ":c:hv" opt;do
 	case $opt in
-		v ) printf "$VERSION\n"; exit 0  ;;
+		v ) printf "%s\n" "$VERSION"; exit 0  ;;
 		h ) usage_main ;;
 		c )
 			config_file="$OPTARG"
@@ -893,7 +894,7 @@ case $mode in
 		options="h"
 		call_mode "$@"
 		;;
-	* ) printf "Unknown mode $mode.\n" >&2; usage_main; exit 1;;
+	* ) printf "Unknown mode %s.\n" "$mode" >&2; usage_main; exit 1;;
 esac
 
 exit 0
