@@ -375,7 +375,7 @@ draft_to_twtfile () {
 	while read msg;do
 		[ -n "$msg" ] || continue
 		printf "$_timestamp_fmt\t%s\n" "$_fracsecs" "$msg"
-		_fracsecs=$(( $_fracsecs + 1 ))
+		_fracsecs=$((  _fracsecs + 1 ))
 	done < "$draft_file" | expand_mentions >> "$twtfile"
 	publish
 }
@@ -830,7 +830,7 @@ while getopts ":c:hv" opt;do
 	esac
 done
 
-shift $(($OPTIND - 1))
+shift $(( OPTIND - 1))
 
 read_config
 
