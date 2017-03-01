@@ -205,13 +205,11 @@ limit () {
 }
 
 sort_tweets () {
-	if [ "$sort_order" = "ascending" ];then
-		_sort_switches=
-	elif [ "$sort_order" = "descending" ];then
-		_sort_switches=-r
-	else
-		die "Unknown sort_order '$sort_order'. Must be either ascending or descending."
-	fi
+	case $sort_order in
+		ascending  ) _sort_switches= ;;
+		descending ) _sort_switches=-r ;;
+		* ) die "Sort order must be either ascending or descending." ;;
+	esac
 
 	awk '
 		BEGIN { OFS=FS="\t"; OFMT="%f" }
