@@ -24,6 +24,7 @@ color_time=blue
 color_hashtag=cyan
 color_mention=yellow
 sign_twtfile=0
+check_signatures=0
 ipfs_publish=0
 ipfs_wrap_with_dir=0
 ipfs_recursive=0
@@ -541,7 +542,9 @@ timeline () {
 
 		[ -e "$cache_dir/twtfiles/$nick.txt" ] || continue
 
-		if [ "$have_gpg" -eq 1 ];then
+		prop=
+
+		if [ "$have_gpg" -eq 1 ] && [ "$check_signatures" -eq 1 ];then
 			gpg_status="$(gpg_verify "$nick")"
 			case $gpg_status in
 				*NODATA*   ) prop=gpg_unsigned ;;

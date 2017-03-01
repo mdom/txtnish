@@ -174,6 +174,10 @@ will create a signed file in a temporary directory and change the value of
 Signing your twtfile might break some twtxt clients as lines without
 a *TAB* are not allowed by a strict reading of the spec.
 
+### check_signature
+
+Verify pgp signatures and show the result in the timeline if set to 1. Defaults to 0.
+
 ### ipfs_gateway
 
 When you subscribe to a ipns:// address, txtnish will call this gateway to get
