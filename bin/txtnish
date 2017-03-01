@@ -197,7 +197,7 @@ format_msg (){
 }
 
 limit () {
-	if [ -n "$limit" ] && [ "$limit" -gt 0 ];then
+	if [ "$limit" -gt 0 ];then
 		sed "${limit}q"
 	else
 		cat
