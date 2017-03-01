@@ -263,7 +263,7 @@ sort_tweets () {
 			$4 = seconds_since_epoch
 			print fracsecs, $0
 		}
-	' | sort -rn -k5 -k1 | limit | sort $_sort_switches -k5 -k1 | cut -f 2-
+	' | sort -rn -k5 -k1 | limit | sort -n $_sort_switches -k5 -k1 | cut -f 2-
 }
 
 maybe_pager () {
