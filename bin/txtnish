@@ -191,6 +191,9 @@ format_msg (){
 				if ( prop_array[i] == "tls" || prop_array[i] == "gpg_trusted" ) {
 					prop_array[i] = colorize(fg,"green",prop_array[i])
 				}
+				if ( prop_array[i] == "notls" ) {
+					prop_array[i] = colorize(fg,"red",prop_array[i])
+				}
 			}
 
 			props = prop_array[1]
