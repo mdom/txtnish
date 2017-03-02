@@ -648,8 +648,6 @@ timeline () {
 			https://* ) prop="${prop:+$prop,}tls" ;;
 			http://* ) prop="${prop:+$prop,}notls" ;;
 			ipfs://* | ipns://* ) prop=ipfs ;;
-			? ) : ;;
-			* ) prop=local ;;
 		esac
 
 		prefix_columns "$nick" "$url" "$prop" < "$cache_dir/twtfiles/$nick.txt"
