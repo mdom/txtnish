@@ -497,8 +497,8 @@ update () {
 	_http_rc=$?
 
 	for logfile in "$log_dir"/http.log.*;do
-		nick="${logfile##*.}"
-		awk -vnick="$nick" '{print nick ": " $0 }' "$logfile"
+		_nick="${logfile##*.}"
+		awk -vnick="_$nick" '{print nick ": " $0 }' "$logfile"
 		rm "$logfile"
 	done > "$log_dir"/http.log
 
