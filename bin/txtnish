@@ -277,7 +277,21 @@ sort_tweets () {
 			if ( $4 <= now )
 				print fracsecs, $0
 		}
-	' | sort -rn -k5 -k1 -t "$TAB" | limit | sort -n $_sort_switches -k5 -k1 -t "$TAB" | cut -f 2-
+	' | sort -rn -k5 -k1 -t "$TAB" | uniq_tweets | limit | sort -n $_sort_switches -k5 -k1 -t "$TAB" | cut -f 2-
+}
+
+uniq_tweets () {
+	awk '
+		BEGIN {
+			FS=OFS="\t"
+		}
+		{
+			key = $1 $5 $6
+			if ( last != key )
+				print
+			last = key
+		}
+	'
 }
 
 maybe_pager () {
