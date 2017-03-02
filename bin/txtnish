@@ -653,7 +653,9 @@ publish () {
 		scp "$twtfile" "$scp_user@$scp_host:${scp_remote_name:-${twtfile##*/}}"
 	fi
 	if [ -n "$ftp_user" ] && [ -n "$ftp_host" ];then
-		curl -nT "$twtfile" "ftp://$ftp_user@$ftp_host/${ftp_remote_name:-${twtfile##*/}}"
+		if curl -Ss -nT "$twtfile" "ftp://$ftp_user@$ftp_host/${ftp_remote_name:-${twtfile##*/}}";then
+			printf "Uploaded twtfile to %s\n" "ftp://$ftp_user@$ftp_host/${ftp_remote_name:-${twtfile##*/}}"
+		fi
 	fi
 	post_tweet_hook
 }
