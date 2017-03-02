@@ -560,7 +560,9 @@ unfollow () {
 }
 
 following () {
-	cat "$follow_file"
+	if [ -e "$follow_file" ];then
+		cat "$follow_file"
+	fi
 }
 
 tweet () {
