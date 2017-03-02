@@ -209,7 +209,9 @@ format_msg (){
 			gsub(/@[[:alnum:]_]+/, csi fg colors[ENVIRON["color_mention"]] "m&" reset, msg)
 		}
 		fmt = ENVIRON["formatter"]
-		printf "* %s (%s) [%s]\n", nick, ts, props
+		printf "* %s (%s)", nick, ts
+		if ( props )  printf " [%s]", props
+		printf "\n"
 		print msg | fmt
 		close(fmt)
 	}'
