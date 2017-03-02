@@ -2,6 +2,8 @@
 
 VERSION="0.2"
 
+TAB=$(printf "\t")
+
 ###################
 ## Default config #
 ###################
@@ -272,7 +274,7 @@ sort_tweets () {
 			if ( $4 <= now )
 				print fracsecs, $0
 		}
-	' | sort -rn -k5 -k1 | limit | sort -n $_sort_switches -k5 -k1 | cut -f 2-
+	' | sort -rn -k5 -k1 -t "$TAB" | limit | sort -n $_sort_switches -k5 -k1 -t "$TAB" | cut -f 2-
 }
 
 maybe_pager () {
