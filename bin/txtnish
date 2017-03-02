@@ -350,13 +350,16 @@ gpg_verify () {
 
 collapse_mentions () {
 	## TODO this *has* to be easier
-	awk -v follow_file="$follow_file" '
+	export follow_file nick twturl
+	awk '
 		BEGIN {
 			FS=" "
-			while ( (getline < follow_file) > 0 ) {
+			while ( (getline < ENVIRON["follow_file"] ) > 0 ) {
 				sub(/^http:/,"https:",$2)
 				urls[$2]=$1
 			}
+			if ( ENVIRON["twturl"] )
+				urls[ENVIRON["twturl"]] = ENVIRON["nick"]
 			FS="\t"
 			OFS=FS
 		}
@@ -389,12 +392,15 @@ collapse_mentions () {
 }
 
 expand_mentions () {
-	awk -v follow_file="$follow_file" '
+	export follow_file nick twturl
+	awk '
 		BEGIN {
 			FS=" "
-			while ( (getline < follow_file) > 0 ) {
+			while ( (getline < ENVIRON["follow_file"] ) > 0 ) {
 				nicks[$1]=$2
 			}
+			if ( ENVIRON["twturl"] )
+				urls[ENVIRON["nick"]] = ENVIRON["twturl"]
 			FS="\t"
 			OFS=FS
 		}
@@ -477,6 +483,10 @@ update () {
 		user_agent="txtnish/$VERSION (+${twturl}; @$nick)"
 	else
 		user_agent="txtnish/$VERSION (+https://github.com/mdom/txtnish)"
+	fi
+
+	if [ -e "$twtfile" ];then
+		ln -sf "$twtfile" "$cache_dir/twtfiles/$nick.txt"
 	fi
 
 	case $http_backend in
@@ -599,7 +609,8 @@ timeline () {
 		have_gpg=1
 	fi
 
-	while read nick url;do
+	{ following ; printf "$nick $twturl\n"; } | \
+		while read nick url ;do
 
 		if [ $# -ne 0 ] && ! in_list "$*" "$nick";then
 			continue
@@ -621,11 +632,14 @@ timeline () {
 
 		case $url in
 			https://* ) prop="${prop:+$prop,}tls" ;;
-			* ) prop="${prop:+$prop,}notls" ;;
+			http://* ) prop="${prop:+$prop,}notls" ;;
+			ipfs://* | ipns://* ) prop=ipfs ;;
+			? ) : ;;
+			* ) prop=local ;;
 		esac
 
 		prefix_columns "$nick" "$url" "$prop" < "$cache_dir/twtfiles/$nick.txt"
-	done < "$follow_file" | display_tweets
+	done | display_tweets
 }
 
 publish () {
