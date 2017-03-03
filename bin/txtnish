@@ -595,21 +595,20 @@ follow () {
 }
 
 unfollow () {
-	old_nick=$1
-	[ -n "$old_nick" ] || usage "Required parameter NICK is missing."
+	_url_or_nick=$1
+	[ -n "$_url_or_nick" ] || usage "Required parameter NICK_OR_URL is missing."
 	tempfile="$follow_file.$$"
 	removed=
 	while read nick url;do
-		if [ "$nick" = "$old_nick" ];then
-			removed=1
-		else
-			printf "%s %s\n" "$nick" "$url";
-		fi
+		case $_url_or_nick in
+			$nick | $url  ) removed=1 ;;
+			* ) printf "%s %s\n" "$nick" "$url" ;;
+		esac
 	done < "$follow_file" > "$tempfile"
 	if [ -n "$removed" ];then
 		mv "$tempfile" "$follow_file"
 	else
-		die "You're not following $old_nick."
+		die "You're not following $_url_or_nick."
 	fi
 }
 
