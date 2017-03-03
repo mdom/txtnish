@@ -465,7 +465,7 @@ process_stat_log () {
 		nick="${nick%.txt}"
 
 		case $code in
-			404 | 410 | 5?? )
+			4?? | 5?? )
 				printf "%s: Feed returned %s.\n" \
 					"$nick" "$code" >&2
 				;;
