@@ -112,6 +112,7 @@ args_for_curl () {
 		--silent \
 		--output "$cache_dir/twtfiles/$1.txt" \
 		--time-cond "$cache_dir/twtfiles/$1" \
+		--write-out '%{filename_effective}\t%{http_code}\t%{num_redirects}\t%{url_effective}\n' \
 		"$2"
 }
 
@@ -458,6 +459,25 @@ post_tweet_hook () {
 	:
 }
 
+process_stat_log () {
+	while read file code redirects url;do
+		nick="${file##*/}"
+		nick="${nick%.txt}"
+
+		case $code in
+			404 | 410 | 5?? )
+				printf "%s: Feed returned %s.\n" \
+					"$nick" "$code" >&2
+				;;
+		esac
+
+		if [ "$redirects" -gt 0 ];then
+			printf "%s: Canonical url at %s.\n" "$nick" "$url" >&2
+		fi
+
+	done < "$log_dir/stat.log"
+}
+
 read_key () {
 	_key=
 	if [ -t 0 ];then
@@ -526,32 +546,33 @@ update () {
 	sed -e 's/\s*#.*$//;/^\s*$/d' "$follow_file" | while read nick url;do
 		rewrite_url
 		$_get_args "$nick" "$url"
-	done | xargs -d "\n" -n$_no_args -P "$max_procs" "$http_backend" $http_backend_args
+	done | xargs -d "\n" -n$_no_args -P "$max_procs" "$http_backend" $http_backend_args > "$log_dir/stat.log"
 	_http_rc=$?
 
 	for logfile in "$log_dir"/http.log.*;do
 		_nick="${logfile##*.}"
-		awk -vnick="$_nick" '{print nick ": " $0 }' "$logfile"
+		awk -vnick="$_nick" '{print nick ": " $0 }' "$logfile" >&2
 		rm "$logfile"
-	done > "$log_dir"/http.log
+	done
 
-	if [ "$http_backend" = "wget" ];then
-		while read nick url;do
-			_twtfile="$cache_dir/wget/${url#*://}"
-			_twtfile=${_twtfile%%#*}
-			if [ -d "$_twtfile" ] && [ -e "$_twtfile/index.html" ];then
-				_twtfile="$_twtfile/index.html"
-			fi
-			if [ -e "$_twtfile" ];then
-				ln -sf "$_twtfile" "$cache_dir/twtfiles/$nick.txt"
-			fi
-		done < "$follow_file"
-	fi
+	case $http_backend in
+		wget )
+			while read nick url;do
+				_twtfile="$cache_dir/wget/${url#*://}"
+				_twtfile=${_twtfile%%#*}
+				if [ -d "$_twtfile" ] && [ -e "$_twtfile/index.html" ];then
+					_twtfile="$_twtfile/index.html"
+				fi
+				if [ -e "$_twtfile" ];then
+					ln -sf "$_twtfile" "$cache_dir/twtfiles/$nick.txt"
+				fi
+			done < "$follow_file"
+			;;
+		curl )
+			process_stat_log
+			;;
+	esac
 
-	if [ "$_http_rc" -ne 0 ] ;then
-		printf "http_backend returned errors, see %s for details.\n" \
-			"$log_dir/http.log" >&2
-	fi
 }
 
 
