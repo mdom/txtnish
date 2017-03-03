@@ -367,16 +367,16 @@ collapse_mentions () {
 	export follow_file nick twturl
 	awk '
 		function normalize_url (url) {
-				sub(/^http:/,"https:",$2)
+			sub(/^http:/,"https:",$2)
 
-				if ( url ~ /^https:/ ) {
-					host = url
-					sub(/^https:\/\//,"", host)
-					sub(/\/.*/,"", host)
-					host = tolower(host)
-					url = "https://" host substr(url,9+length(host))
-				}
-				return url
+			if ( url ~ /^https:/ ) {
+				host = url
+				sub(/^https:\/\//,"", host)
+				sub(/\/.*/,"", host)
+				host = tolower(host)
+				url = "https://" host substr(url,9+length(host))
+			}
+			return url
 		}
 		BEGIN {
 			FS=" "
