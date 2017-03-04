@@ -1,0 +1,160 @@
+#!/bin/sh
+
+PATH=$(pwd):$PATH
+
+plan=0
+rc_plan=0
+tapsig_state="running"
+
+ok(){
+	plan=$(( plan + 1 ))
+	_ok "$@"
+}
+
+not_ok(){
+	plan=$(( plan + 1 ))
+	_not_ok "$@"
+}
+
+_ok(){
+	printf "ok %i%s%s\n" "$plan" "${name:+ $name}" "${todo:+ # TODO $todo}"
+}
+
+_not_ok(){
+	printf "not ok %i%s%s\n" "$plan" "${name:+ $name}" "${todo:+ # TODO $todo}"
+}
+
+skip(){
+	skip=$1
+}
+
+todo(){
+	todo=$1
+}
+
+depends_on(){
+	if ! command -v "$1" >/dev/null 2>&1;then
+		skip_all "$1 not installed."
+	fi
+}
+
+skip_all(){
+	clean_up
+	printf "1..0 # SKIP%s\n" "${1+ $1}"
+	exit 0
+}
+
+# shellcheck disable=SC2015
+check_expections(){
+	if [ "$plan" != 0 ];then
+		test_files &&
+		[ "${rc-0}" -eq "$rc_plan" ] &&
+		_ok ||
+		_not_ok
+	fi
+}
+
+test_files(){
+	for i in *_plan;do
+		if ! test_output "$i" "${i%_plan}";then
+			return 1
+		fi
+	done
+	return 0
+}
+
+name(){
+	name=$1
+}
+
+test_output(){
+	if cmp -s "$1" "$2";then
+		return 0
+	else
+		# shellcheck disable=SC2119
+		diff "$1" "$2" | diag
+		return 1
+	fi
+}
+
+done_testing(){
+	tapsig_state="done"
+}
+
+tap(){
+	touch stdout_plan stderr_plan
+	plan=$(( plan + 1 ))
+	if [ -n "$skip" ];then
+		printf "ok %i # SKIP $skip\n" "$plan"
+	else
+		"$@" > stdout 2> stderr
+		rc=$?
+		check_expections
+	fi
+	clean_up
+}
+
+# shellcheck disable=SC2120
+diag(){
+	if [ -n "$1" ];then
+		printf "# %s\n" "$1"
+	else
+		sed 's/^/# /'
+	fi
+}
+
+bail_out(){
+	printf "Bail out!%s\n" "${1+ $1}"
+	exit 0
+}
+
+stdout_is(){ cat > stdout_plan; }
+stderr_is(){ cat > stderr_plan; }
+
+file_is() {
+	cat > "$1_plan"
+}
+
+rc_is() { rc_plan=$1; }
+
+clean_up(){
+	for i in *_plan;do
+		rm -f "$i" "${i%_plan}"
+	done
+	rc_plan=0
+	todo=""
+	skip=""
+	name=""
+}
+
+if [ -e "$1" ];then
+	TAPSIG_ORIG_DIR=$(pwd)
+	TAPSIG_WORK_DIR="$HOME/.tapsig.$$"
+	if ! mkdir "$TAPSIG_WORK_DIR";then
+		printf "Can't create working directory %s.\n" "$TAPSIG_WORK_DIR" >&2
+		exit 1
+	fi
+	if ! cd "$TAPSIG_WORK_DIR";then
+		printf "Can't cd into working directory %s.\n" "$TAPSIG_WORK_DIR" >&2
+		exit 1
+	fi
+
+	cd "$TAPSIG_WORK_DIR"
+	. "$TAPSIG_ORIG_DIR/$1"
+	cd "$TAPSIG_ORIG_DIR"
+
+	rm -R "$TAPSIG_WORK_DIR"
+
+	if [ "$tapsig_state" = "done" ];then
+		printf "1..%s\n" "$plan"
+		exit 0
+	elif [ $plan -gt 0 ];then
+		printf "# Tests were run but done_testing() was not seen.\n" >&2
+		exit 1
+	else 
+		exit 1
+	fi
+fi
+
+exit 0
+

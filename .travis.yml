@@ -5,3 +5,5 @@ addons:
     - debian-sid    # Grab ShellCheck from the Debian repo
     packages:
     - shellcheck
+script: 
+  prove -e t/tapsig
