@@ -511,10 +511,14 @@ update () {
 
 	_no_args=$( args_for_curl | wc -l )
 
-	sed -e 's/\s*#.*$//;/^\s*$/d' "$follow_file" | while read nick url;do
+	if [ "$xargs_parallel" -eq 0 ];then
+		unset xargs_parallel
+	fi
+
+	sed -e 's/\s*#.*$//;/^\s*$/d' "$follow_file" | while read -r nick url;do
 		rewrite_url
 		args_for_curl "$nick" "$url"
-	done | xargs -d "\n" -n$_no_args -P "$max_procs" curl $http_backend_args  | process_stat_log
+	done | xargs -d "\n" -n "$_no_args" ${xargs_parallel+-P "$max_procs"} curl $http_backend_args  | process_stat_log
 	_http_rc=$?
 
 	for logfile in "$log_dir"/http.log.*;do
