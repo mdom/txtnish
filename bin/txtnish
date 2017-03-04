@@ -16,7 +16,6 @@ always_update=1
 sort_order=descending
 twtfile=~/twtxt.txt
 disclose_identity=0
-http_backend=curl
 max_procs=20
 xargs_parallel=1
 editor=${EDITOR:-vi}
@@ -84,21 +83,6 @@ read_config () {
 	fi
 }
 
-# Description: Print arguments for wget on stdout for xargs
-# Synopsis: args_for_wget NICK URL COUNTER
-# Returns: Nothing
-
-args_for_wget () {
-	printf "%s\n" \
-		--user-agent "$user_agent" \
-		--timestamping \
-		--directory-prefix "$cache_dir/wget/" \
-		--force-directories \
-		--no-verbose \
-		--append-output "$log_dir/http.log.$1" \
-		"$2"
-}
-
 # Description: Print arguments for curl on stdout for xargs
 # Synopsis: args_for_curl NICK URL COUNTER
 # Returns: Nothing
@@ -116,14 +100,6 @@ args_for_curl () {
 		"$2"
 }
 
-
-# Description: Print arguments for generic http backend on stdout for xargs
-# Synopsis: args_for_curl NICK URL COUNTER
-# Returns: Nothing
-
-args_for_generic () {
-	printf "%s\n" "$1" "$2"
-}
 
 rewrite_url () {
 	if [ -z "$_ipfs_checked" ];then
@@ -532,21 +508,12 @@ update () {
 		ln -sf "$twtfile" "$cache_dir/twtfiles/$nick.txt"
 	fi
 
-	case $http_backend in
-		wget )  create_dir "$cache_dir/wget/"
-			_get_args=args_for_wget
-			;;
-		curl )  _get_args=args_for_curl ;;
-		*?*  )  _get_args=args_for_generic ;;
-		*    )  die "Missing http_backend. Please install wget or curl.\n"
-	esac
-
-	_no_args=$( $_get_args | wc -l )
+	_no_args=$( args_for_curl | wc -l )
 
 	sed -e 's/\s*#.*$//;/^\s*$/d' "$follow_file" | while read nick url;do
 		rewrite_url
 		$_get_args "$nick" "$url"
-	done | xargs -d "\n" -n$_no_args -P "$max_procs" "$http_backend" $http_backend_args > "$log_dir/stat.log"
+	done | xargs -d "\n" -n$_no_args -P "$max_procs" curl $http_backend_args > "$log_dir/stat.log"
 	_http_rc=$?
 
 	for logfile in "$log_dir"/http.log.*;do
@@ -555,26 +522,10 @@ update () {
 		rm "$logfile"
 	done
 
-	case $http_backend in
-		wget )
-			while read nick url;do
-				_twtfile="$cache_dir/wget/${url#*://}"
-				_twtfile=${_twtfile%%#*}
-				if [ -d "$_twtfile" ] && [ -e "$_twtfile/index.html" ];then
-					_twtfile="$_twtfile/index.html"
-				fi
-				if [ -e "$_twtfile" ];then
-					ln -sf "$_twtfile" "$cache_dir/twtfiles/$nick.txt"
-				fi
-			done < "$follow_file"
-			;;
-		curl )
-			process_stat_log
-			;;
-	esac
+	process_stat_log
 
+	return $_http_rc
 }
-
 
 follow () {
 	new_nick=$1
@@ -818,7 +769,7 @@ call_mode () {
 			d ) sort_order=descending ;;
 			N ) max_procs="$OPTARG" ;;
 			S ) filter_expr="$OPTARG" ;;
-			B ) http_backend="$OPTARG" ;;
+			B ) : ;;
 			: ) usage "Option -$OPTARG requires an argument." ;;
 			\? ) usage "Invalid option -$OPTARG." ;;
 		esac
@@ -885,7 +836,6 @@ EOF
 			U ) printf "  -U     Do not update sources.\n" ;;
 			N ) printf "  -N NUM Use NUM parallel download processes.\n" ;;
 			S ) printf "  -S EXP Filter tweets\n" ;;
-			B ) printf "  -B ARG Specify which http backend to use (wget or curl).\n" ;;
 			c ) printf "  -c CFG Specify a custom config file location.\n" ;;
 		esac
 		options=${options#?}
@@ -912,8 +862,8 @@ create_dir "$cache_dir"
 create_dir "$cache_dir/twtfiles"
 create_dir "$log_dir"
 
-if ! have_cmd curl && have_cmd wget;then
-	http_backend=wget
+if ! have_cmd curl;then
+	die "curl has to be installed."
 fi
 
 while getopts ":c:hv" opt;do
@@ -947,7 +897,7 @@ shift
 case $mode in
 	update )
 		synopsis="Fetching new twtfiles from all your sources."
-		options="hN:B:"
+		options="hN:"
 		call_mode "$@"
 		;;
 	follow )
@@ -970,13 +920,13 @@ case $mode in
 	timeline | view )
 		synopsis="Display timeline."
 		arguments="[NICK...]"
-		options="hl:adpPuUN:S:B:"
+		options="hl:adpPuUN:S:"
 		call_mode "$@"
 		;;
 	reply )
 		synopsis="Reply to tweets."
 		arguments="[NICK]"
-		options="hl:aduUN:S:B:"
+		options="hl:aduUN:S:"
 		call_mode "$@"
 		;;
 	publish )

@@ -35,10 +35,10 @@ $ txtnish quickstart
 # Installation
 
 *txtnish* only depends on tools you normally find in a posix environment:
-awk, sort, cut and sh. There are only two exceptions: You either need
-to have curl or wget installed in order to download twtxt files. And you
-need a xargs that support parallel processing via *-P*. You can use a xargs
-without, but then txtnish falls back to downloading one url after another.
+awk, sort, cut and sh. There are only two exceptions: You need curl
+to download twtxt files and a xargs that support parallel processing
+via *-P*. You can use a xargs without, but then txtnish falls back to
+downloading one url after another.
 
 Installation itself is as easy as it gets: Just copy the script somewhere
 in your *PATH*.
@@ -118,7 +118,6 @@ Examples:
 txtnish timeline -S 'nick == "mdom" && msg ~ /#twtxt/'
 ```
 
-## -B BACKEND
 
 Which http backend to use. See documentation for the `http_backend`
 option for further details.
@@ -144,15 +143,6 @@ section *COLORS* how to change the color settings. Default to 1.
 
 Which pager to use if use_pager is enabled. Default to `less -R` in
 order to display colors.
-
-### http_backend
-
-*txtnish* provides two backends to retrieve files via http. You can
-either use *wget* or *curl*. The default is curl.
-
-It's possible to specify any command as backend. The command should
-take two paramters, the nick and url, and saves the twtfile at
-`$cache_dir/twtfiles/$nick.txt`.
 
 ### disclose_identity
 
