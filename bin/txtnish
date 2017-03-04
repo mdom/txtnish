@@ -32,6 +32,14 @@ ipfs_recursive=0
 ipfs_gateway=http://localhost:8080
 nick="${USER}"
 
+ftp_user=""
+ftp_host=""
+
+scp_user=""
+scp_host=""
+
+http_backend_args=""
+
 ######################
 ## Runtime variables #
 ######################
@@ -79,6 +87,7 @@ create_dir () {
 
 read_config () {
 	if [ -e "$config_file" ];then
+		# shellcheck source=/dev/null
 		. "$config_file"
 	fi
 }
@@ -471,6 +480,7 @@ getline () {
 	_var=${2:-_line}
 	if [ -t 0 ];then
 		if [ -n "$BASH_VERSION" ];then
+			# shellcheck disable=SC2039
 			read -erp "$1: " "$_var"
 		else
 			printf "%s: " "$1"
@@ -606,7 +616,7 @@ timeline () {
 		have_gpg=1
 	fi
 
-	{ following ; printf "$nick $twturl\n"; } | \
+	{ following ; printf "%s %s\n" "$nick" "$twturl"; } | \
 		while read -r nick url ;do
 
 		if [ $# -ne 0 ] && ! in_list "$*" "$nick";then
@@ -647,8 +657,10 @@ publish () {
 			_ipfs_args="$_ipfs_args -r"
 			_ipfs_path="${twtfile%/*}"
 		fi
+
+		# shellcheck disable=SC2086
 		if ipfs add -q $_ipfs_args "$_ipfs_path" > "$cache_dir/ipfs";then
-			awk 'END{ print $1 }' "$cache_dir/ipfs" | xargs ipfs name publish
+			awk 'END{ print $1 }' "$cache_dir/ipfs" | xargs ipfs name "publish"
 		fi
 	fi
 	if [ "$sign_twtfile" -eq 1 ];then
@@ -713,7 +725,7 @@ quickstart () {
 
 	if yesno "Import urls to follow we-are-twtx?" ;then
 		curl -Ss https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt | \
-			xargs -n2 txtnish follow
+			xargs -n2 txtnish "follow"
 	fi
 
 	if yesno "Do you want to upload your twtfile with scp?";then
