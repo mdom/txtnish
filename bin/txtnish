@@ -53,7 +53,7 @@ log_dir="$cache_dir/logs"
 # Returns: success if command is found; fails otherwise
 
 have_cmd () {
-	type "$1" >/dev/null 2>&1
+	command -v "$1" >/dev/null 2>&1
 }
 
 # Description: Print error message and exit
