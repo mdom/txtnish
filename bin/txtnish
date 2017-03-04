@@ -512,7 +512,7 @@ update () {
 
 	sed -e 's/\s*#.*$//;/^\s*$/d' "$follow_file" | while read nick url;do
 		rewrite_url
-		$_get_args "$nick" "$url"
+		args_for_curl "$nick" "$url"
 	done | xargs -d "\n" -n$_no_args -P "$max_procs" curl $http_backend_args > "$log_dir/stat.log"
 	_http_rc=$?
 
