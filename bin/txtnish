@@ -420,7 +420,7 @@ draft_to_twtfile () {
 	[ -s "$draft_file" ] || return
 	_fracsecs=0
 	_timestamp_fmt=$(TZ=C date "+%Y-%m-%dT%H:%M:%S.%%06iZ")
-	while read msg;do
+	while read -r msg;do
 		[ -n "$msg" ] || continue
 		printf "$_timestamp_fmt\t%s\n" "$_fracsecs" "$msg"
 		_fracsecs=$((  _fracsecs + 1 ))
@@ -438,7 +438,7 @@ post_tweet_hook () {
 }
 
 process_stat_log () {
-	while read file code redirects url;do
+	while read -r file code redirects url;do
 		nick="${file##*/}"
 		nick="${nick%.txt}"
 
@@ -471,7 +471,7 @@ getline () {
 	_var=${2:-_line}
 	if [ -t 0 ];then
 		if [ -n "$BASH_VERSION" ];then
-			read -ep "$1: " "$_var"
+			read -erp "$1: " "$_var"
 		else
 			printf "%s: " "$1"
 			IFS= read -r "$_var"
@@ -534,7 +534,7 @@ follow () {
 	[ -n "$new_url"  ] || usage "Required parameter URL is missing."
 
 	tempfile="$follow_file.$$"
-	while read nick url;do
+	while read -r nick url;do
 		if [ "$nick" = "$new_nick" ] || [ "$url" = "$new_url" ];then
 			die "You're already following $nick at $url."
 		fi
@@ -549,7 +549,7 @@ unfollow () {
 	[ -n "$_url_or_nick" ] || usage "Required parameter NICK_OR_URL is missing."
 	tempfile="$follow_file.$$"
 	removed=
-	while read nick url;do
+	while read -r nick url;do
 		case $_url_or_nick in
 			$nick | $url  ) removed=1 ;;
 			* ) printf "%s %s\n" "$nick" "$url" ;;
@@ -603,7 +603,7 @@ timeline () {
 	fi
 
 	{ following ; printf "$nick $twturl\n"; } | \
-		while read nick url ;do
+		while read -r nick url ;do
 
 		if [ $# -ne 0 ] && ! in_list "$*" "$nick";then
 			continue
