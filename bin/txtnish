@@ -343,8 +343,8 @@ collapse_mentions () {
 	## TODO this *has* to be easier
 	export follow_file nick twturl
 	awk '
-		function normalize_url (url) {
-			sub(/^http:/,"https:",$2)
+		function normalize_url (url,  host) {
+			sub(/^http:/,"https:",url)
 
 			if ( url ~ /^https:/ ) {
 				host = url
@@ -358,9 +358,9 @@ collapse_mentions () {
 		BEGIN {
 			FS=" "
 			while ( (getline < ENVIRON["follow_file"] ) > 0 ) {
-				urls[normalize_url($2)]=$1
+				urls[normalize_url($2)] = $1
 			}
-			if ( ENVIRON["twturl"] )
+			if ( ENVIRON["twturl"] && ENVIRON["nick"] )
 				urls[ENVIRON["twturl"]] = ENVIRON["nick"]
 			FS="\t"
 			OFS=FS
@@ -376,7 +376,9 @@ collapse_mentions () {
 					url = fields[2]
 				}
 
-				if ( normalize_url(url) in urls ) {
+				url = normalize_url(url)
+
+				if ( url in urls ) {
 					new_msg = new_msg "@" urls[url]
 				}
 				else {
