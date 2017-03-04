@@ -452,8 +452,7 @@ process_stat_log () {
 		if [ "$redirects" -gt 0 ];then
 			printf "%s: Canonical url at %s.\n" "$nick" "$url" >&2
 		fi
-
-	done < "$log_dir/stat.log"
+	done
 }
 
 read_key () {
