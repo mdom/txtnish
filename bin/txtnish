@@ -876,6 +876,10 @@ create_dir "$cache_dir"
 create_dir "$cache_dir/twtfiles"
 create_dir "$log_dir"
 
+if ! [ -e "$follow_file" ];then
+	:> "$follow_file"
+fi
+
 if ! have_cmd curl;then
 	die "curl has to be installed."
 fi
