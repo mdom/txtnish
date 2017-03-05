@@ -316,8 +316,6 @@ normalize_tweets () {
 		{
 			## remove escape sequences
 			gsub(/[^[:print:][:space:]]/,"")
-			## remove control characters from the msg
-			gsub(/[[:cntrl:]]/," ",$5)
 
 			#normlize timestamp
 			sub(/Z$/,"+00:00",$4)
