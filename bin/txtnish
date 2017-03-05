@@ -97,7 +97,7 @@ read_config () {
 # Returns: Nothing
 
 args_for_curl () {
-	printf "%s\n" \
+	printf "\"%s\"\n" \
 		--user-agent "$user_agent" \
 		--location \
 		--stderr "$log_dir/http.log.$1" \
@@ -108,7 +108,6 @@ args_for_curl () {
 		--write-out '%{filename_effective}\t%{http_code}\t%{num_redirects}\t%{url_effective}\n' \
 		"$2"
 }
-
 
 rewrite_url () {
 	if [ -z "$_ipfs_checked" ];then
@@ -296,7 +295,7 @@ in_list () {
 }
 
 prefix_columns () {
-	awk -vnick="$1" -vurl="$2" -vprops="$3" 'BEGIN{OFS="\t"}{print nick,url,props,$0}'
+	awk -v nick="$1" -v url="$2" -v props="$3" 'BEGIN{OFS="\t"}{print nick,url,props,$0}'
 }
 
 filter_tweets () {
@@ -528,12 +527,12 @@ update () {
 	sed -e 's/\s*#.*$//;/^\s*$/d' "$follow_file" | while read -r nick url;do
 		rewrite_url
 		args_for_curl "$nick" "$url"
-	done | xargs -d "\n" -n "$_no_args" ${xargs_parallel+-P "$max_procs"} curl $http_backend_args  | process_stat_log
+	done | xargs -n "$_no_args" ${xargs_parallel+-P "$max_procs"} curl $http_backend_args  | process_stat_log
 	_http_rc=$?
 
 	for logfile in "$log_dir"/http.log.*;do
 		_nick="${logfile##*.}"
-		awk -vnick="$_nick" '{print nick ": " $0 }' "$logfile" >&2
+		awk -v nick="$_nick" '{print nick ": " $0 }' "$logfile" >&2
 		rm "$logfile"
 	done
 
