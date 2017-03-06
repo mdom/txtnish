@@ -40,6 +40,8 @@ scp_host=""
 
 http_backend_args=""
 
+raw_timeline=0
+
 ######################
 ## Runtime variables #
 ######################
@@ -310,7 +312,11 @@ filter_tweets () {
 }
 
 display_tweets () {
-	normalize_tweets | filter_tweets | sort_tweets | collapse_mentions | format_msg | maybe_pager
+	if [ "$raw_timeline" -eq 1 ];then
+		normalize_tweets | filter_tweets | sort_tweets
+	else
+		normalize_tweets | filter_tweets | sort_tweets | collapse_mentions | format_msg | maybe_pager
+	fi
 }
 
 normalize_tweets () {
@@ -787,6 +793,7 @@ call_mode () {
 			d ) sort_order=descending ;;
 			N ) max_procs="$OPTARG" ;;
 			S ) filter_expr="$OPTARG" ;;
+			R ) raw_timeline=1 ;;
 			B ) : ;;
 			: ) usage "Option -$OPTARG requires an argument." ;;
 			\? ) usage "Invalid option -$OPTARG." ;;
@@ -852,6 +859,7 @@ EOF
 			P ) printf "  -P     Do not use pager to display content.\n" ;;
 			u ) printf "  -u     Update sources.\n" ;;
 			U ) printf "  -U     Do not update sources.\n" ;;
+			R ) printf "  -R     Print raw timeline.\n" ;;
 			N ) printf "  -N NUM Use NUM parallel download processes.\n" ;;
 			S ) printf "  -S EXP Filter tweets\n" ;;
 			c ) printf "  -c CFG Specify a custom config file location.\n" ;;
@@ -942,7 +950,7 @@ case $mode in
 	timeline | view )
 		synopsis="Display timeline."
 		arguments="[NICK...]"
-		options="hl:adpPuUN:S:"
+		options="hl:adpPuUN:S:R"
 		call_mode "$@"
 		;;
 	reply )
