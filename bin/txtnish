@@ -593,6 +593,7 @@ update () {
 	_http_rc=$?
 
 	for logfile in "$log_dir"/http.log.*;do
+		[ -e "$logfile" ] || next
 		_nick="${logfile##*.}"
 		awk -v nick="$_nick" '{print nick ": " $0 }' "$logfile" >&2
 		rm "$logfile"
