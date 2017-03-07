@@ -574,10 +574,9 @@ update () {
 		if [ $# -eq 0 ];then
 			cat "$follow_file"
 		else
-			export follow_file
 			printf "%s\n" "$@" | awk '
 				BEGIN {
-					follow_file = ENVIRON["follow_file"]
+					follow_file = "'"$follow_file"'"
 					while ((getline < follow_file) > 0 )
 						followings[$1] = $2
 				}
