@@ -515,7 +515,16 @@ yesno () {
 	return $_rc
 }
 
+################
+## Subcommands #
+################
+
 sync_followings () {
+
+	if [ -z "$sync_followings" ];then
+		die "You have to configure sync_followings in $config_file."
+	fi
+
 	curl -LSs "$sync_followings" > "$cache_dir/sync_followings.txt.new" || return
 
 	touch "$cache_dir/sync_followings.txt"
@@ -540,17 +549,9 @@ sync_followings () {
 	rm -R "$tempdir"
 }
 
-################
-## Subcommands #
-################
-
 update () {
 	if ! [ -s "$follow_file" ] ;then
 		die "You're not following anyone."
-	fi
-
-	if [ -n "$sync_followings" ];then
-		sync_followings
 	fi
 
 	if [ "$disclose_identity" -eq 1 ] && [ -n "$twturl" ];then
@@ -835,6 +836,11 @@ call_mode () {
 		esac
 	done
 	shift $(( OPTIND - 1 ))
+
+	case $mode in
+		*-* ) mode="${mode%-*}_${mode#*-}"
+	esac
+
 	$mode "$@"
 }
 
@@ -847,13 +853,14 @@ usage_main () {
 		usage: $program_name COMMAND [OPTIONS...]
 
 		  Command:
-		    tweet          Append a new tweet to your twtxt file.
-		    timeline       Retrieve your personal timeline.
-		    follow         Add a new source to your followings.
-		    unfollow       Remove an existing source from your followings.
-		    following      Return the list of sources you're following.
-		    reply          Reply to tweets.
-		    publish        Publish your twtfile.
+		    tweet           Append a new tweet to your twtxt file.
+		    timeline        Retrieve your personal timeline.
+		    follow          Add a new source to your followings.
+		    unfollow        Remove an existing source from your followings.
+		    following       Return the list of sources you're following.
+		    reply           Reply to tweets.
+		    publish         Publish your twtfile.
+		    sync-followings Sync followings from remote file.
 
 		  Options:
 		    -h      Print a help message and exit.
@@ -1002,6 +1009,11 @@ case $mode in
 	tweet )
 		synopsis="Append a new tweet to your twtxt file."
 		arguments="[TWEET...]"
+		options="h"
+		call_mode "$@"
+		;;
+	sync-followings )
+		synopsis="Sync followings from a remote file."
 		options="h"
 		call_mode "$@"
 		;;
