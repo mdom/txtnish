@@ -31,6 +31,8 @@ ipfs_wrap_with_dir=0
 ipfs_recursive=0
 ipfs_gateway=http://localhost:8080
 nick="${USER}"
+sync_followings=""
+# sync_followings="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt"
 
 ftp_user=""
 ftp_host=""
@@ -73,6 +75,10 @@ have_cmd () {
 die () {
 	printf "%s: %s\n" "$program_name" "$1" >&2
 	exit "${2:-1}"
+}
+
+warn () {
+	printf "%s: %s\n" "$program_name" "$1" >&2
 }
 
 # Description: Create dir unless it exists
@@ -509,6 +515,31 @@ yesno () {
 	return $_rc
 }
 
+sync_followings () {
+	curl -LSs "$sync_followings" > "$cache_dir/sync_followings.txt.new" || return
+
+	touch "$cache_dir/sync_followings.txt"
+	if cmp "$cache_dir/sync_followings.txt" "$cache_dir/sync_followings.txt.new"; then
+		rm "$cache_dir/sync_followings.txt.new"
+		return
+	fi
+
+	tempdir="$cache_dir/tmp.$$"
+	mkdir "$tempdir" || return
+
+	sort "$follow_file"                       > "$tempdir/followings"
+	sort "$cache_dir/sync_followings.txt"     > "$tempdir/sync_followings.txt"
+	sort "$cache_dir/sync_followings.txt.new" > "$tempdir/sync_followings.txt.new"
+
+	comm -13 "$tempdir/sync_followings.txt" "$tempdir/sync_followings.txt.new" | \
+		comm -13 "$tempdir/followings" - | \
+		while read -r _nick _url; do
+			follow "$_nick" "$_url"
+		done
+	mv "$cache_dir/sync_followings.txt.new" "$cache_dir/sync_followings.txt"
+	rm -R "$tempdir"
+}
+
 ################
 ## Subcommands #
 ################
@@ -516,6 +547,10 @@ yesno () {
 update () {
 	if ! [ -s "$follow_file" ] ;then
 		die "You're not following anyone."
+	fi
+
+	if [ -n "$sync_followings" ];then
+		sync_followings
 	fi
 
 	if [ "$disclose_identity" -eq 1 ] && [ -n "$twturl" ];then
@@ -559,7 +594,7 @@ follow () {
 	tempfile="$follow_file.$$"
 	while read -r nick url;do
 		if [ "$nick" = "$new_nick" ] || [ "$url" = "$new_url" ];then
-			die "You're already following $nick at $url."
+			warn "You're already following $nick at $url."
 		fi
 		printf "%s %s\n" "$nick" "$url";
 	done < "$follow_file" > "$tempfile"
