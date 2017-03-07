@@ -98,6 +98,12 @@ read_config () {
 		# shellcheck source=/dev/null
 		. "$config_file"
 	fi
+
+	if [ "$disclose_identity" -eq 1 ] && [ -n "$twturl" ];then
+		user_agent="txtnish/$VERSION (+${twturl}; @$nick)"
+	else
+		user_agent="txtnish/$VERSION (+https://github.com/mdom/txtnish)"
+	fi
 }
 
 # Description: Print arguments for curl on stdout for xargs
@@ -552,12 +558,6 @@ sync_followings () {
 update () {
 	if ! [ -s "$follow_file" ] ;then
 		die "You're not following anyone."
-	fi
-
-	if [ "$disclose_identity" -eq 1 ] && [ -n "$twturl" ];then
-		user_agent="txtnish/$VERSION (+${twturl}; @$nick)"
-	else
-		user_agent="txtnish/$VERSION (+https://github.com/mdom/txtnish)"
 	fi
 
 	if [ -e "$twtfile" ];then
