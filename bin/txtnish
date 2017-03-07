@@ -134,7 +134,7 @@ rewrite_url () {
 
 maybe_update () {
 	if [ "$always_update" -eq 1 ];then
-		update
+		update "$@"
 	fi
 }
 
@@ -570,7 +570,23 @@ update () {
 		unset xargs_parallel
 	fi
 
-	sed -e 's/\s*#.*$//;/^\s*$/d' "$follow_file" | while read -r nick url;do
+	{
+		if [ $# -eq 0 ];then
+			cat "$follow_file"
+		else
+			export follow_file
+			printf "%s\n" "$@" | awk '
+				BEGIN {
+					follow_file = ENVIRON["follow_file"]
+					while ((getline < follow_file) > 0 )
+						followings[$1] = $2
+				}
+				followings[$1] {
+					print $1 " " followings[$1]
+				}
+			'
+		fi
+	} |  while read -r nick url;do
 		rewrite_url
 		args_for_curl "$nick" "$url"
 	done | xargs -n "$_no_args" ${xargs_parallel+-P "$max_procs"} curl $http_backend_args  | process_stat_log
@@ -654,7 +670,7 @@ reply () {
 }
 
 timeline () {
-	maybe_update;
+	maybe_update "$@";
 
 	have_gpg=0
 	if have_cmd gpg ;then
