@@ -307,13 +307,6 @@ maybe_pager () {
 	fi
 }
 
-in_list () {
-	case " $1 " in
-		*\ $2\ * ) return 0 ;;
-		* ) return 1 ;;
-	esac
-}
-
 prefix_columns () {
 	awk -v nick="$1" -v url="$2" -v props="$3" 'BEGIN{OFS="\t"}{print nick,url,props,$0}'
 }
@@ -366,7 +359,7 @@ normalize_tweets () {
 }
 
 gpg_verify () {
-	gpg --status-fd=1 --no-verbose --quiet --batch --verify "$cache_dir/twtfiles/$1.txt" 2>/dev/null
+	gpg --status-fd=1 --no-verbose --quiet --batch --verify "$1" 2>/dev/null
 }
 
 collapse_mentions () {
@@ -685,19 +678,36 @@ timeline () {
 		have_gpg=1
 	fi
 
-	{ following ; printf "%s %s\n" "$nick" "$twturl"; } | \
-		while read -r nick url ;do
+	{
+	if [ $# -eq 0 ];then
+		following | while read -r _nick _url; do
+			printf "%s %s\n" "$_nick" "$_url"
+		done
+		printf "%s %s\n" "$nick" "$twturl"
+	else
+		printf "%s\n" "$@" | awk '
+			BEGIN {
+				follow_file = "'"$follow_file"'"
+				while ( (getline < follow_file) > 0 )
+					followings[$1] = $2
+				close(follow_file)
+			}
+			{
+				if ( followings[$1] )
+					print $1, followings[$1]
+			}
+		'
+	fi
+	} | while read -r nick url;do
 
-		if [ $# -ne 0 ] && ! in_list "$*" "$nick";then
-			continue
-		fi
+		file="$cache_dir/twtfiles/$nick.txt"
 
-		[ -e "$cache_dir/twtfiles/$nick.txt" ] || continue
+		[ -e "$file" ] || continue
 
 		prop=
 
 		if [ "$have_gpg" -eq 1 ] && [ "$check_signatures" -eq 1 ];then
-			gpg_status="$(gpg_verify "$nick")"
+			gpg_status="$(gpg_verify "$file")"
 			case $gpg_status in
 				*NODATA*   ) prop=gpg_unsigned ;;
 				*NOPUBKEY* ) prop=gpg_signed ;;
@@ -712,7 +722,7 @@ timeline () {
 			ipfs://* | ipns://* ) prop=ipfs ;;
 		esac
 
-		prefix_columns "$nick" "$url" "$prop" < "$cache_dir/twtfiles/$nick.txt"
+		prefix_columns "$nick" "$url" "$prop" < "$file"
 	done | display_tweets
 }
 
