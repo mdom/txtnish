@@ -670,6 +670,14 @@ reply () {
 }
 
 timeline () {
+	case $1 in
+		*://* )
+			curl -Ss -L --user-agent "$user_agent" "$1" \
+				| awk -v url="$1" 'BEGIN{OFS="\t"}{ print url, url, "", $0 }' \
+				| display_tweets
+			exit 0
+			;;
+	esac
 	maybe_update "$@";
 
 	have_gpg=0
