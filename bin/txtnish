@@ -117,6 +117,7 @@ args_for_curl () {
 		--stderr "$log_dir/http.log.$1" \
 		--show-error \
 		--silent \
+		--compressed \
 		--output "$cache_dir/twtfiles/$1.txt" \
 		--time-cond "$cache_dir/twtfiles/$1" \
 		--write-out '%{filename_effective}\t%{http_code}\t%{num_redirects}\t%{url_effective}\n' \
@@ -524,7 +525,7 @@ sync_followings () {
 		die "You have to configure sync_followings in $config_file."
 	fi
 
-	curl -LSs "$sync_followings" > "$cache_dir/sync_followings.txt.new" || return
+	curl --compressed -LSs "$sync_followings" > "$cache_dir/sync_followings.txt.new" || return
 
 	touch "$cache_dir/sync_followings.txt"
 	if cmp "$cache_dir/sync_followings.txt" "$cache_dir/sync_followings.txt.new"; then
@@ -665,7 +666,7 @@ reply () {
 timeline () {
 	case $1 in
 		*://* )
-			curl -Ss -L --user-agent "$user_agent" "$1" \
+			curl --compressed -Ss -L --user-agent "$user_agent" "$1" \
 				| awk -v url="$1" 'BEGIN{OFS="\t"}{ print url, url, "", $0 }' \
 				| display_tweets
 			exit 0
