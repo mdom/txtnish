@@ -123,7 +123,7 @@ args_for_curl () {
 		--silent \
 		--compressed \
 		--output "$cache_dir/twtfiles/$1.txt" \
-		--time-cond "$cache_dir/twtfiles/$1" \
+		--time-cond "$cache_dir/twtfiles/$1.txt" \
 		--write-out '%{filename_effective}\t%{http_code}\t%{num_redirects}\t%{url_effective}\n' \
 		"$2"
 }
