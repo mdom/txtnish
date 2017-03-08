@@ -161,6 +161,33 @@ format_msg (){
 
 	export color_nick color_time color_hashtag color_mention use_color formatter
 	awk '
+		function colors_to_escape ( color,  fgc, bgc, n, c, attr ) {
+			print "color " color > "foo"
+			n = split(color,c,/ /)
+			for (i=1; i<=n; i++ ) {
+					print "color_table for " c[i] " -> " colors[c[i]] > "foo"
+				if ( match(c[i], /^on_/ ) ) {
+					bgc = bg colors[substr(c[i],4)]
+				} else if ( colors[c[i]] != "" ) {
+					fgc = fg colors[c[i]]
+				} else if ( attribs[c[i]] != "" ) {
+					if ( attr )
+						attr = attr ";" attribs[c[i]]
+					else
+						attr = ";" attribs[c[i]]
+				}
+			}
+			if ( bgc && fgc ) {
+				return csi fgc ";" bgc attr "m"
+			}
+			if ( fgc ) {
+				return csi fgc attr "m"
+			}
+		}
+
+		function colorize ( layer, color, text ) {
+			return csi layer colors[color] "m" text reset
+		}
 		BEGIN {
 			FS="\t"
 			ORS="\n\n"
@@ -176,12 +203,20 @@ format_msg (){
 			colors["magenta"] = 5
 			colors["cyan"] = 6
 			colors["white"] = 7
+
+			attribs["bold"] = 1
+			attribs["faint"] = 2
+			attribs["italic"] = 3
+			attribs["underline"] = 4
+			attribs["blink"] = 5
+			attribs["fastblink"] = 6
 			srand()
 			now=srand()
-		}
 
-		function colorize ( layer, color, text ) {
-			return csi layer colors[color] "m" text reset
+			color_nick = colors_to_escape(ENVIRON["color_nick"])
+			color_time = colors_to_escape(ENVIRON["color_time"])
+			color_hashtag = colors_to_escape(ENVIRON["color_hashtag"])
+			color_mention = colors_to_escape(ENVIRON["color_mention"])
 		}
 
 	{
@@ -213,10 +248,10 @@ format_msg (){
 			for (i = 2; i <= n; i++)
 				props = props "," prop_array[i]
 
-			nick = csi fg colors[ENVIRON["color_nick"]] "m" nick reset
-			ts = csi fg colors[ENVIRON["color_time"]] "m" ts reset
-			gsub(/#[[:alnum:]_]+/, csi fg colors[ENVIRON["color_hashtag"]] "m&" reset, msg)
-			gsub(/@[[:alnum:]_]+/, csi fg colors[ENVIRON["color_mention"]] "m&" reset, msg)
+			nick = color_nick nick reset
+			ts = color_time ts reset
+			gsub(/#[[:alnum:]_]+/, color_hashtag "&" reset, msg)
+			gsub(/@[[:alnum:]_]+/, color_mention "&" reset, msg)
 		}
 		fmt = ENVIRON["formatter"]
 		printf "* %s (%s)", nick, ts
