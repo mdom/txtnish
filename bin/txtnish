@@ -33,6 +33,7 @@ ipfs_gateway=http://localhost:8080
 nick="${USER}"
 sync_followings=""
 # sync_followings="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt"
+timeout=0
 
 ftp_user=""
 ftp_host=""
@@ -111,6 +112,9 @@ read_config () {
 # Returns: Nothing
 
 args_for_curl () {
+	if [ "$timeout" -ne 0 ];then
+		printf "%s\n" "--max-time" "$timeout"
+	fi
 	printf "\"%s\"\n" \
 		--user-agent "$user_agent" \
 		--location \
