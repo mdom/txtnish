@@ -561,7 +561,12 @@ parallel_curl () {
 		unset xargs_parallel
 	fi
 
-	xargs -n "$_no_args" ${xargs_parallel+-P "$max_procs"} curl $http_backend_args
+	## POSIX xargs will even try to run an empty command
+	## therefor we wrap the call to curl in a shell that first checks
+	## if there any arguments
+
+	xargs -n "$_no_args" ${xargs_parallel+-P "$max_procs"} \
+		sh -c '[ $# -gt 0 ] && exec "$0" "$@"' curl $http_backend_args
 }
 
 ################
