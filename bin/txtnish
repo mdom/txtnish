@@ -554,6 +554,16 @@ yesno () {
 	return $_rc
 }
 
+parallel_curl () {
+	_no_args=$( args_for_curl | wc -l )
+
+	if [ "$xargs_parallel" -eq 0 ];then
+		unset xargs_parallel
+	fi
+
+	xargs -n "$_no_args" ${xargs_parallel+-P "$max_procs"} curl $http_backend_args
+}
+
 ################
 ## Subcommands #
 ################
@@ -597,12 +607,6 @@ update () {
 		ln -sf "$twtfile" "$cache_dir/twtfiles/$nick.txt"
 	fi
 
-	_no_args=$( args_for_curl | wc -l )
-
-	if [ "$xargs_parallel" -eq 0 ];then
-		unset xargs_parallel
-	fi
-
 	{
 		if [ $# -eq 0 ];then
 			cat "$follow_file"
@@ -621,7 +625,7 @@ update () {
 	} |  while read -r nick url;do
 		rewrite_url
 		args_for_curl "$nick" "$url"
-	done | xargs -n "$_no_args" ${xargs_parallel+-P "$max_procs"} curl $http_backend_args  | process_stat_log
+	done | parallel_curl | process_stat_log
 	_http_rc=$?
 
 	for logfile in "$log_dir"/http.log.*;do
