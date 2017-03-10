@@ -50,11 +50,11 @@ raw_timeline=0
 ######################
 
 program_name=${0##*/}
-config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/txtnish"
+config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/$progam_name"
 config_file="$config_dir/config"
 follow_file="$config_dir/following"
 draft_file="$config_dir/draft"
-cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/txtnish"
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/$progam_name"
 log_dir="$cache_dir/logs"
 
 #####################
@@ -854,7 +854,7 @@ quickstart () {
 
 	if yesno "Import urls to follow we-are-twtx?" ;then
 		curl -Ss https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt | \
-			xargs -n2 txtnish "follow"
+			xargs -n2 "$progam_name" "follow"
 	fi
 
 	if yesno "Do you want to upload your twtfile with scp?";then
