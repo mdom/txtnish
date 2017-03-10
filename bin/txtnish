@@ -583,7 +583,7 @@ sync_followings () {
 	curl --compressed -LSs "$sync_followings" > "$cache_dir/sync_followings.txt.new" || return
 
 	touch "$cache_dir/sync_followings.txt"
-	if cmp "$cache_dir/sync_followings.txt" "$cache_dir/sync_followings.txt.new"; then
+	if cmp "$cache_dir/sync_followings.txt" "$cache_dir/sync_followings.txt.new" >/dev/null 2>&1; then
 		rm "$cache_dir/sync_followings.txt.new"
 		return
 	fi
