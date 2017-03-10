@@ -50,11 +50,11 @@ raw_timeline=0
 ######################
 
 program_name=${0##*/}
-config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/$progam_name"
+config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/$program_name"
 config_file="$config_dir/config"
 follow_file="$config_dir/following"
 draft_file="$config_dir/draft"
-cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/$progam_name"
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/$program_name"
 log_dir="$cache_dir/logs"
 
 #####################
