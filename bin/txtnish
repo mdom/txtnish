@@ -266,14 +266,6 @@ format_msg (){
 	}'
 }
 
-limit () {
-	if [ "$limit" -gt 0 ];then
-		sed "${limit}q"
-	else
-		cat
-	fi
-}
-
 sort_tweets () {
 	case $sort_order in
 		ascending  ) _sort_switches="" ;;
@@ -281,24 +273,39 @@ sort_tweets () {
 		* ) die "Sort order must be either ascending or descending." ;;
 	esac
 
-	awk 'BEGIN { FS=OFS="\t" }{ split($4,a,/\./); print a[0] ? a[0] : 0, a[1], $0 }' | \
-		sort -rn -k1,1 -k2,2 -t "$TAB" | \
-		uniq_tweets | \
-		limit | \
-		sort -n $_sort_switches -k1,1 -k2,2 -t "$TAB" | \
-		cut -f 3-
+	awk 'BEGIN { FS=OFS="\t" }{ split($4,a,/\./); print $0, a[0] ? a[0] :0, a[1] }' |\
+		sort -rn -k6,6 -k7,7 -t "$TAB" | \
+		limit_uniq_tweets
 }
 
-uniq_tweets () {
+limit_uniq_tweets () {
 	awk '
 		BEGIN {
 			FS=OFS="\t"
+			limit='"$limit"'
+			sort_order="'"$sort_order"'"
 		}
 		{
-			key = $1 $2 $7
-			if ( last != key )
-				print
+			key = $5 $6 $7
+			NF-=2
+			if ( last != key ) {
+				lines_seen++
+				if ( sort_order == "ascending" ) {
+					lines[lines_seen] = $0
+				} else {
+					print
+				}
+				if ( limit > 0 && lines_seen >= limit )
+					exit
+			}
 			last = key
+		}
+		END {
+			if ( sort_order == "ascending" ) {
+				for ( i = lines_seen; i>0; i-- ) {
+					print lines[i]
+				}
+			}
 		}
 	'
 }
