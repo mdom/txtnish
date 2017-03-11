@@ -751,6 +751,21 @@ reply () {
 	draft_to_twtfile
 }
 
+mail () {
+	if [ $# -eq 0 ];then
+		die "Missing required argument ADDRESS."
+	fi
+	use_pager=0
+	use_color=0
+	filter_expr="new()"
+	tempfile="$cache_dir/timeline.$$"
+	timeline > "$tempfile"
+	if [ -s "$tempfile" ]; then
+		command mail -s twtxt "$@" < "$tempfile"
+	fi
+	rm -f "$tempfile"
+}
+
 timeline () {
 	set_timestamp last_timeline
 
@@ -987,6 +1002,7 @@ usage_main () {
 		    reply           Reply to tweets.
 		    publish         Publish your twtfile.
 		    sync-followings Sync followings from remote file.
+		    mail            Send new tweets per mail.
 
 		  Options:
 		    -h      Print a help message and exit.
@@ -1134,6 +1150,11 @@ case $mode in
 	sync-followings )
 		synopsis="Sync followings from a remote file."
 		options="hv"
+		;;
+	mail )
+		synopsis="Mail new tweets."
+		arguments="ADDRESS ..."
+		options="hvaduU:"
 		;;
 	quickstart )
 		synopsis="Import settings from twtxt."
