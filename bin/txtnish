@@ -364,7 +364,7 @@ normalize_tweets () {
 				$4 = substr($4,1,RSTART + RLENGTH -2) ":00" substr($4,RSTART + RLENGTH -1 )
 			}
 
-			# print if matching spec
+			# ignore lines not matching spec
 			if ( NF != 5 || $4 !~ rfc3339 )
 				next
 
