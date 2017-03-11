@@ -167,10 +167,8 @@ format_msg (){
 	export color_nick color_time color_hashtag color_mention use_color formatter
 	awk '
 		function colors_to_escape ( color,  fgc, bgc, n, c, attr ) {
-			print "color " color > "foo"
 			n = split(color,c,/ /)
 			for (i=1; i<=n; i++ ) {
-					print "color_table for " c[i] " -> " colors[c[i]] > "foo"
 				if ( match(c[i], /^on_/ ) ) {
 					bgc = bg colors[substr(c[i],4)]
 				} else if ( colors[c[i]] != "" ) {
