@@ -323,8 +323,24 @@ prefix_columns () {
 }
 
 filter_tweets () {
-	filter_expr="${filter_expr:-1}"
-	awk -F"\t" '{nick=$1;url=$2;props=$3;ts=$4;msg=$5; if ('"$filter_expr"') { print } }'
+	awk '
+		BEGIN {
+			FS=OFS="\t"
+			last_timeline = '"$last_timeline"'
+			srand()
+			now=srand()
+		}
+		function new () {
+			return $4 > last_timeline
+
+		}
+		{
+			nick=$1;url=$2;props=$3;ts=$4;msg=$5;
+			if ('"${filter_expr:-1}"') {
+				print
+			}
+		}
+	'
 }
 
 display_tweets () {
@@ -582,6 +598,17 @@ parallel_curl () {
 		sh -c '[ $# -gt 0 ] && exec "$0" "$@"' curl $http_backend_args
 }
 
+set_timestamp () {
+	if [ -e "$cache_dir/timestamps/$1" ];then
+		get_timestamp "$@"
+	fi
+	awk 'BEGIN{ srand(); print srand() > "'"$cache_dir/timestamps/$1"'"}'
+}
+
+get_timestamp () {
+	read "${2:-$1}" < "$cache_dir/timestamps/$1"
+}
+
 ################
 ## Subcommands #
 ################
@@ -725,6 +752,8 @@ reply () {
 }
 
 timeline () {
+	set_timestamp last_timeline
+
 	case $1 in
 		*://* )
 			curl --compressed -Ss -L --user-agent "$user_agent" "$1" \
@@ -1025,6 +1054,7 @@ trap cleanup EXIT
 create_dir "$config_dir"
 create_dir "$cache_dir"
 create_dir "$cache_dir/twtfiles"
+create_dir "$cache_dir/timestamps"
 create_dir "$log_dir"
 
 if ! [ -e "$follow_file" ];then
