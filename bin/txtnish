@@ -326,7 +326,7 @@ filter_tweets () {
 	awk '
 		BEGIN {
 			FS=OFS="\t"
-			last_timeline = '"$last_timeline"'
+			last_timeline = "'"$last_timeline"'"
 			srand()
 			now=srand()
 		}
