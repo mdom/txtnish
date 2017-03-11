@@ -948,7 +948,7 @@ usage_main () {
 
 		  Options:
 		    -h      Print a help message and exit.
-		    -v      Print version and exit.
+		    -V      Print version and exit.
 
 EOF
 	if [ -n "$1" ];then
@@ -1024,7 +1024,7 @@ fi
 
 while getopts ":c:hv" opt;do
 	case $opt in
-		v ) printf "%s\n" "$VERSION"; exit 0  ;;
+		V ) printf "%s\n" "$VERSION"; exit 0  ;;
 		h ) usage_main ;;
 		c )
 			config_file="$OPTARG"
