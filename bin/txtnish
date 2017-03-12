@@ -751,6 +751,25 @@ reply () {
 	draft_to_twtfile
 }
 
+mailpipe () {
+	if [ -z "$mail_password" ];then
+		die "You have to set mail_password!"
+	fi
+	awk '
+		NR==1,/^$/ {next }
+		!pw_seen {
+			if ( "password '"$mail_password"'" != $0 ) {
+				exit
+			}
+			pw_seen=1;
+			next
+		}
+		/^[[:space:]]*$/ || /^>/ { next }
+		/-- /  { exit }
+		1
+	' | tweet
+}
+
 mail () {
 	if [ $# -eq 0 ];then
 		die "Missing required argument ADDRESS."
@@ -1155,6 +1174,10 @@ case $mode in
 		synopsis="Mail new tweets."
 		arguments="ADDRESS ..."
 		options="hvaduU:"
+		;;
+	mailpipe )
+		synopsis="Read mails from stdin and tweet them."
+		options="hv"
 		;;
 	quickstart )
 		synopsis="Import settings from twtxt."
