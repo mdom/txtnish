@@ -774,6 +774,9 @@ mail () {
 	if [ $# -eq 0 ];then
 		die "Missing required argument ADDRESS."
 	fi
+
+	have_cmd mail || die "mailx(1) not installed."
+
 	use_pager=0
 	use_color=0
 	filter_expr="new()"
