@@ -628,7 +628,7 @@ sync_followings () {
 	fi
 
 	tempdir="$cache_dir/tmp.$$"
-	mkdir "$tempdir" || return
+	mkdir -p "$tempdir" || return
 
 	sort "$follow_file"                       > "$tempdir/followings"
 	sort "$cache_dir/sync_followings.txt"     > "$tempdir/sync_followings.txt"
@@ -868,7 +868,7 @@ publish () {
 		fi
 	fi
 	if [ "$sign_twtfile" -eq 1 ];then
-		if mkdir "$cache_dir/tmp.$$/";then
+		if mkdir -p "$cache_dir/tmp.$$/";then
 			tempdir="$cache_dir/tmp.$$/"
 		else
 			die "Can't create temporary dir $tempdir"
