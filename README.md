@@ -109,6 +109,22 @@ shell script.
 
 How many tweets should be shown in timeline. Default to 20.
 
+### formatter
+
+Defined which command is used to wrap each tweet to fit on the screen. It
+defaults to `fmt`, but will fall back to either `fold -s` or `cat`.
+
+### sort_order
+
+How to sort tweets. This option can be either *ascending* or
+*descending*. ascending prints the oldest tweet first, descending the
+newest. This value can be overridden with the `-d` and `-a` flags.
+
+### timeout
+
+Maximum time in seconds that each http connection can take. Defaults
+to zero.
+
 ### use_color
 
 If the output should be colorized with ansi escape sequences. See the
@@ -116,12 +132,26 @@ section *COLORS* how to change the color settings. Default to 1.
 
 ### pager
 
-Which pager to use if use_pager is enabled. Default to `less -R` in
-order to display colors.
+Which pager to use if use_pager is enabled. Default to `less -R` in order
+to display colors. This can be toggled with `-p` or `-P` to enable or
+disable  the pager. Defaults to 1.
 
 ### disclose_identity
 
-If set to 1, send your nick and twturl with every http request. Defaults to 0.
+If set to 1, send your nick and twturl with every http request. This
+makes only sense if you also set *twturl* and *nick*. Defaults to 0.
+
+### nick
+
+Your nick. This is used to collapse mentions of your *twturl* and is
+send to all feeds you're following if *disclose_identity* is set to
+1. Defaults to the environment variable `$USER`.
+
+### twturl
+
+The url of your feeds. This is used to collapse mentions and is send to
+all feeds you're following if *disclose_identity* is set to 1. Defaults
+to the environment variable `$USER`.
 
 ### always_update
 
