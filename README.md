@@ -80,32 +80,11 @@ Displays an outcommented version of your timeline in `$EDITOR`. Every
 line that is not commented after you saved and exited the editor, will
 be tweeted.
 
-# Options
+# Search tweets
 
-## -h
-
-Print a help message and exit.
-
-## -p, -P
-
-Enables or disables the use of a pager to display tweets.
-
-## -u, -U
-
-Either runs a update before any command that displays tweets or just uses the
-cache.
-
-## -a, -d
-
-Sort the timeline either in ascending or descending order.
-
-## -l NUM
-
-Limits the number of shown tweets.
-
-## -S EXPR
-
-Search your timeline for tweets matching *EXPR*. The search expression is a awk conditional with four predefined variables:
+You can provide a search expression to filter your timeline with the flag
+`-S`. The search expression is a awk conditional with four predefined
+variables:
 
 * msg: the message itself
 * url: the url of the twtfile
