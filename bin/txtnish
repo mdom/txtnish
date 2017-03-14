@@ -931,7 +931,7 @@ quickstart () {
 
 	if yesno "Import urls to follow we-are-twtx?" ;then
 		curl -Ss https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt | \
-			xargs -n2 "$progam_name" "follow"
+			xargs -n2 "$program_name" "follow"
 	fi
 
 	if yesno "Do you want to upload your twtfile with scp?";then
