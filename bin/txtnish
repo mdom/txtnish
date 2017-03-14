@@ -268,8 +268,7 @@ format_msg (){
 
 sort_tweets () {
 	case $sort_order in
-		ascending  ) _sort_switches="" ;;
-		descending ) _sort_switches=-r ;;
+		ascending | descending  ) : ;;
 		* ) die "Sort order must be either ascending or descending." ;;
 	esac
 
