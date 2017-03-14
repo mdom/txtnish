@@ -143,9 +143,9 @@ makes only sense if you also set *twturl* and *nick*. Defaults to 0.
 
 ### nick
 
-Your nick. This is used to collapse mentions of your *twturl* and is
-send to all feeds you're following if *disclose_identity* is set to
-1. Defaults to the environment variable `$USER`.
+Your nick. This is used to collapse mentions of your *twturl* and is send to
+all feeds you're following if *disclose_identity* is set to 1.
+Defaults to the environment variable `$USER`.
 
 ### twturl
 
