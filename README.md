@@ -118,10 +118,6 @@ Examples:
 txtnish timeline -S 'nick == "mdom" && msg ~ /#twtxt/'
 ```
 
-
-Which http backend to use. See documentation for the `http_backend`
-option for further details.
-
 # Configuration
 
 At startup txtnish checks for `~/.config/txtnish/config` exists and
