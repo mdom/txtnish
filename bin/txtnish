@@ -359,6 +359,10 @@ normalize_tweets () {
 			now = srand()
 		}
 		{
+			## handle any ws as seperator
+			sub(/[[:space:]]+/, "\t", $4)
+			$0=$0
+
 			## remove escape sequences
 			gsub(/[^[:print:][:space:]]/,"")
 
