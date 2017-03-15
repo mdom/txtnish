@@ -359,6 +359,11 @@ normalize_tweets () {
 			now = srand()
 		}
 		{
+			## handle timestamps without T
+			if ( substr($4,11,1) == " " ) {
+				$4 = substr($4,1,10) "T" substr($4,12)
+			}
+
 			## handle any ws as seperator
 			sub(/[[:space:]]+/, "\t", $4)
 			$0=$0
