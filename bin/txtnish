@@ -522,6 +522,15 @@ draft_to_twtfile () {
 	_timestamp_fmt=$(TZ=C date "+%Y-%m-%dT%H:%M:%S.%%06iZ")
 	while read -r msg;do
 		[ -n "$msg" ] || continue
+		case $msg in
+			/follow\ *|/unfollow\ * )
+				set -- ${msg#/}
+				if [ $# -eq 3 ]; then
+					"$@"
+					continue
+				fi
+				;;
+		esac
 		printf "$_timestamp_fmt\t%s\n" "$_fracsecs" "$msg"
 		_fracsecs=$((  _fracsecs + 1 ))
 	done < "$draft_file" | expand_mentions >> "$twtfile"
@@ -755,6 +764,10 @@ reply () {
 		
 		# Please enter your tweets. Lines starting with '# ' and empty
 		# lines will be ignored.
+		# You can follow or unfollow feeds by starting a line with a /,
+		# for example:
+		# /follow foo https://example.com/foo.txt
+		# Those lines will not be tweeted.
 		
 EOF
 	timeline "$@" | sed -e 's/^/# /' -e 's/^# $//' >> "$draft_file"
