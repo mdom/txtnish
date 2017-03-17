@@ -158,6 +158,14 @@ to the environment variable `$USER`.
 Always update all feeds before showing tweets. If you set this variable
 to 0, you need to update manually with the update command.
 
+### http_proxy
+
+Sets the proxy server to use for HTTP.
+
+### https_proxy
+
+Sets the proxy server to use for HTTPS.
+
 ### sign_twtfile
 
 If set to 1, sign the twtfile with pgp. Defaults to 0.

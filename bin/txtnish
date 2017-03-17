@@ -36,6 +36,9 @@ sync_followings=""
 timeout=0
 verbose=0
 
+http_proxy=""
+https_proxy=""
+
 ftp_user=""
 ftp_host=""
 
@@ -110,6 +113,9 @@ read_config () {
 	else
 		user_agent="txtnish/$VERSION (+https://github.com/mdom/txtnish)"
 	fi
+
+	[ -n "$http_proxy"  ] && export http_proxy
+	[ -n "$https_proxy" ] && export https_proxy
 }
 
 # Description: Print arguments for curl on stdout for xargs
