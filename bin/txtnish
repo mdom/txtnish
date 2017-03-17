@@ -49,6 +49,13 @@ http_backend_args=""
 
 raw_timeline=0
 
+# this is the password for mailpipe. Mailpipe expects the first line of the
+# mail to be in the form "password $mail_password"
+mail_password=""
+
+# timestamps defaults
+last_timeline=0
+
 ######################
 ## Runtime variables #
 ######################
@@ -530,6 +537,7 @@ draft_to_twtfile () {
 		[ -n "$msg" ] || continue
 		case $msg in
 			/follow\ *|/unfollow\ * )
+				# shellcheck disable=2086
 				set -- ${msg#/}
 				if [ $# -eq 3 ]; then
 					"$@"
@@ -617,6 +625,7 @@ parallel_curl () {
 	## therefor we wrap the call to curl in a shell that first checks
 	## if there any arguments
 
+	# shellcheck disable=SC2016
 	xargs -n "$_no_args" ${xargs_parallel+-P "$max_procs"} \
 		sh -c '[ $# -gt 0 ] && exec "$0" "$@"' curl $http_backend_args
 }
@@ -748,6 +757,7 @@ following () {
 	fi
 }
 
+# shellcheck disable=SC2120
 tweet () {
 	: >"$draft_file"
 
@@ -788,6 +798,7 @@ mailpipe () {
 	if [ -z "$mail_password" ];then
 		die "You have to set mail_password!"
 	fi
+	# shellcheck disable=SC2119
 	awk '
 		NR==1,/^$/ {next }
 		!pw_seen {
