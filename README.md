@@ -226,6 +226,28 @@ your twtfile will be published. Defaults to 0.
 
 ## Colors
 
+If `use_color` is set to 1, the nick, timestamp, mentions and hashtags
+will be colorized. txtnish recognizes black, red, green, yellow, blue,
+magenta, cyan and white. You can set the background color with the prefix
+`on_`.
+
+```
+color_nick="yellow on_white"
+```
+
+Additional a color definiation can specify the attributes bold, bright,
+faint, italic, underline, blink and fastblink if your terminal supports
+them.
+
+```
+color_nick="yellow on_white blink"
+```
+
+The order of colors and attributes doesn't matter and multiple attributes can
+be combined.
+
+txtnish uses the following defaults.
+
 ```sh
 color_nick=yellow
 color_time=blue
