@@ -638,7 +638,7 @@ set_timestamp () {
 }
 
 get_timestamp () {
-	read "${2:-$1}" < "$cache_dir/timestamps/$1"
+	read -r "${2:-$1}" < "$cache_dir/timestamps/$1"
 }
 
 ################
