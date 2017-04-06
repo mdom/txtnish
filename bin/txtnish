@@ -1046,6 +1046,15 @@ set_optarg () {
 	esac
 }
 
+set_optarg_bool () {
+	case $OPTION in
+		-[A-Z] ) OPTARG=0 ;;
+		-[a-z] ) OPTARG=1 ;;
+		--no-?* ) OPTARG=0 ;;
+		--?* ) OPTARG=1 ;;
+	esac
+}
+
 call_mode () {
 	while [ -n "$1" ]; do
 		OPTION="$1"
@@ -1070,21 +1079,15 @@ call_mode () {
 				check_if_valid_option help
 			       	usage
 				;;
-			-p | --pager )
+			-p | -P | --pager | --no-pager )
 				check_if_valid_option pager
-				use_pager=1
+				set_optarg_bool
+				use_pager="$OPTARG"
 				;;
-			-P | --no-pager )
-				check_if_valid_option no-pager
-				use_pager=0
-				;;
-			-u | --update )
+			-u | -U | --update | --no-update )
 				check_if_valid_option update
-				always_update=1
-				;;
-			-U | --no-update )
-				check_if_valid_option no-update
-				always_update=0
+				set_optarg_bool
+				always_update="$OPTARG"
 				;;
 			-a | --ascending )
 				check_if_valid_option ascending
