@@ -1050,7 +1050,7 @@ set_optarg () {
 
 call_mode () {
 	while [ -n "$1" ]; do
-		OPTION=$1
+		OPTION="$1"
 		SHIFT=1
 		case $1 in
 			-l | --limit | --limit=?* | -l?* )
@@ -1103,6 +1103,13 @@ call_mode () {
 			-v | --verbose )
 				check_if_valid_option verbose
 				verbose=1
+				;;
+			-??* )
+				shift
+				## dash 0.5.7 can't handle direct expansion
+				_tmp=${OPTION#??}
+				set -- "${OPTION%$_tmp}" "-$_tmp" "$@"
+				SHIFT=0
 				;;
 			-* )
 				usage "Invalid option $1."
@@ -1221,6 +1228,7 @@ fi
 # while getopts ":c:hv" opt;do
 while [ -n "$1" ]; do
 	SHIFT=1
+	OPTION="$1"
 	case $1 in
 		-v | --version )
 			printf "%s\n" "$VERSION"
@@ -1233,6 +1241,13 @@ while [ -n "$1" ]; do
 			set_optarg "$@"
 			config_file="$OPTARG"
 			[ -e "$config_file" ] || die "Missing configuration file '$config_file'";
+			;;
+		-??* )
+			shift
+			## dash 0.5.7 can't handle direct expansion
+			_tmp=${OPTION#??}
+			set -- "${OPTION%$_tmp}" "-$_tmp" "$@"
+			SHIFT=0
 			;;
 		-* )
 			die "Invalid option $1"
