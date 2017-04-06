@@ -1220,6 +1220,7 @@ fi
 
 # while getopts ":c:hv" opt;do
 while [ -n "$1" ]; do
+	SHIFT=1
 	case $1 in
 		-v | --version )
 			printf "%s\n" "$VERSION"
@@ -1228,15 +1229,9 @@ while [ -n "$1" ]; do
 		-h | --help )
 			usage_main
 			;;
-		-c | --config )
-			[ -n "$2" ] || die "Option $1 requires an argument."
-			config_file="$2"
-			[ -e "$config_file" ] || die "Missing configuration file '$config_file'";
-			shift
-			;;
-		--config=?* )
-			config_file="${1#*=}"
-			[ -n "$config_file" ] || die "Option ${1%%=*} requires an argument."
+		-c | --config | --config=?* | -c?*  )
+			set_optarg "$@"
+			config_file="$OPTARG"
 			[ -e "$config_file" ] || die "Missing configuration file '$config_file'";
 			;;
 		-* )
@@ -1246,7 +1241,7 @@ while [ -n "$1" ]; do
 			break
 			;;
 	esac
-	shift
+	shift "$SHIFT"
 done
 
 shift $(( OPTIND - 1))
