@@ -1145,8 +1145,8 @@ usage_main () {
 		    mail            Send new tweets per mail.
 
 		  Options:
-		    -h      Print a help message and exit.
-		    -V      Print version and exit.
+		    -h, --help      Print a help message and exit.
+		    -V, --version   Print version and exit.
 
 EOF
 	if [ -n "$1" ];then
@@ -1228,7 +1228,7 @@ main() {
 		SHIFT=1
 		OPTION="$1"
 		case $1 in
-			-v | --version )
+			-V | --version )
 				printf "%s\n" "$VERSION"
 				exit 0
 				;;
