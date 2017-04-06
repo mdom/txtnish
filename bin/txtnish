@@ -1202,6 +1202,21 @@ EOF
 	fi
 }
 
+check_curl () {
+	if ! have_cmd curl;then
+		die "curl has to be installed."
+	fi
+
+	oIFS="$IFS"
+	IFS=.
+	set -- $(curl -V | awk '{print $2;exit}')
+	if [ "$1" -lt 7 ] || [ "$1" -eq 7 ] && [ "$2" -lt 26 ];then
+		die "Need at least curl 7.26.0."
+	fi
+
+	IFS="$oIFS"
+}
+
 #########
 ## Main #
 #########
@@ -1220,9 +1235,7 @@ main() {
 		:> "$follow_file"
 	fi
 
-	if ! have_cmd curl;then
-		die "curl has to be installed."
-	fi
+	check_curl
 
 	while [ -n "$1" ]; do
 		SHIFT=1
