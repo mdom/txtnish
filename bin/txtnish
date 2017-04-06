@@ -1023,7 +1023,7 @@ EOF
 ########################
 
 check_if_valid_option () {
-	case "$options" in
+	case ",$options," in
 		*,$1,* ) : ;;
 		* ) usage "Invalid option $OPTION" ;;
 	esac
