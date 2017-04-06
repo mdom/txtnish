@@ -1104,7 +1104,12 @@ call_mode () {
 				check_if_valid_option verbose
 				verbose=1
 				;;
-			-* ) usage "Invalid option $1." ;;
+			-* )
+				usage "Invalid option $1."
+				;;
+			* )
+				break
+				;;
 		esac
 		shift "$SHIFT"
 	done
