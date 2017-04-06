@@ -703,7 +703,6 @@ update () {
 		rewrite_url
 		args_for_curl "$nick" "$url"
 	done | parallel_curl | process_stat_log
-	_http_rc=$?
 
 	for logfile in "$log_dir"/http.log.*;do
 		[ -e "$logfile" ] || continue
@@ -711,8 +710,6 @@ update () {
 		awk -v nick="$_nick" '{print nick ": " $0 }' "$logfile" >&2
 		rm "$logfile"
 	done
-
-	return $_http_rc
 }
 
 follow () {
