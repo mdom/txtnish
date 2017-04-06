@@ -566,15 +566,16 @@ process_stat_log () {
 		nick="${nick%.txt}"
 
 		case $code in
+			200 | 304 )
+				if [ "$redirects" -gt 0 ];then
+					printf "%s: Canonical url at %s.\n" "$nick" "$url" >&2
+				fi
+				;;
 			4?? | 5?? )
 				printf "%s: Feed returned %s.\n" \
 					"$nick" "$code" >&2
 				;;
 		esac
-
-		if [ "$redirects" -gt 0 ];then
-			printf "%s: Canonical url at %s.\n" "$nick" "$url" >&2
-		fi
 	done
 }
 
