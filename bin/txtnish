@@ -1029,41 +1029,44 @@ check_if_valid_option () {
 	esac
 }
 
-set_optarg_seperated () {
-	[ -n "$1" ] || usage "Option $OPTION requires an argument."
-	OPTARG="$1"
-}
 
-set_optarg_long_combined () {
-	[ -n "${OPTION#*=}" ] || usage "Option ${OPTION%%=*} requires an argument."
-	OPTARG="${OPTION#*=}"
-}
-
-set_optarg_short_combined () {
-	[ -n "${OPTION#??}" ] || usage "Option ${OPTION%%${OPTION#??}} requires an argument."
-	OPTARG="${OPTION#*??}"
-	
+set_optarg () {
+	case $1 in
+		-??* )
+			[ -n "${1#??}" ] || usage "Option ${1%%${1#??}} requires an argument."
+			OPTARG="${1#*??}"
+			;;
+		--?*=?* )
+			[ -n "${1#*=}" ] || usage "Option ${1%%=*} requires an argument."
+			OPTARG="${1#*=}"
+			;;
+		* )
+			[ -n "$2" ] || usage "Option $1 requires an argument."
+			OPTARG="$2"
+			SHIFT=2
+			;;
+	esac
 }
 
 call_mode () {
 	while [ -n "$1" ]; do
 		OPTION=$1
+		SHIFT=1
 		case $1 in
-			-l | --limit )
+			-l | --limit | --limit=?* | -l?* )
 				check_if_valid_option limit
-				set_optarg_seperated "$2"
-				limit="$OPTARG"
-				shift
-				;;
-			--limit=?* )
-				check_if_valid_option limit
-				set_optarg_long_combined
+				set_optarg "$@"
 				limit="$OPTARG"
 				;;
-			-l?* )
-				check_if_valid_option limit
-				set_optarg_short_combined
-				limit="$OPTARG"
+			-N | --max-procs | --max-procs=?* | -N?* )
+				check_if_valid_option max-procs
+				set_optarg "$@"
+				max_procs="$OPTARG"
+				;;
+			-S | --search | --search=?* | -S?* )
+				check_if_valid_option search
+				set_optarg "$2"
+				filter_expr="$OPTARG"
 				;;
 			-h | --help )
 				check_if_valid_option help
@@ -1093,33 +1096,6 @@ call_mode () {
 				check_if_valid_option descending
 				sort_order=descending
 				;;
-			-N | --max-procs )
-				check_if_valid_option max-procs
-				set_optarg_seperated "$2"
-				max_procs="$OPTARG"
-				shift
-				;;
-			--max-procs=?* )
-				check_if_valid_option max-procs
-				set_optarg_long_combined
-				max_procs="$OPTARG"
-				;;
-			-N?* )
-				check_if_valid_option max_procs
-				set_optarg_short_combined
-				max_procs="$OPTARG"
-				;;
-			-S | --search )
-				check_if_valid_option search
-				set_optarg_seperated "$2"
-				filter_expr="$OPTARG"
-				shift
-				;;
-			--search=?* )
-				check_if_valid_option search
-				set_optarg_long_combined
-				filter_expr="$OPTARG"
-				;;
 			-R | --raw )
 				check_if_valid_option raw
 				raw_timeline=1
@@ -1130,7 +1106,7 @@ call_mode () {
 				;;
 			-* ) usage "Invalid option $1." ;;
 		esac
-		shift
+		shift "$SHIFT"
 	done
 
 	case $mode in
