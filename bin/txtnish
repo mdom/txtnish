@@ -562,22 +562,43 @@ post_tweet_hook () {
 }
 
 process_stat_log () {
-	while read -r file code redirects url;do
-		nick="${file##*/}"
-		nick="${nick%.txt}"
-
-		case $code in
-			200 | 304 )
-				if [ "$redirects" -gt 0 ];then
-					printf "%s: Canonical url at %s.\n" "$nick" "$url" >&2
-				fi
-				;;
-			4?? | 5?? )
-				printf "%s: Feed returned %s.\n" \
-					"$nick" "$code" >&2
-				;;
-		esac
-	done
+	tempfile="$follow_file.$$"
+	awk '
+	BEGIN {
+		tempfile="'"$tempfile"'"
+		follow_file="'"$follow_file"'"
+		file      = 1
+		code      = 2
+		redirects = 3
+		url       = 4
+		while ( (getline < follow_file ) > 0 ) {
+			following[$1] = $2
+		}
+		stderr = "cat >&2"
+	}
+	{
+		match($file, /[^/]+.txt$/)
+		nick= substr($file,RSTART,RLENGTH - 4 )
+		if ( $redirects > 0 && ( $code == 200 || $code == 304 )) {
+			following[nick] = $url
+			changed=1
+		} else if ( $code == 410 ) {
+			delete following[nick];
+			changed=1
+		} else if ( $code == 000 ) {
+			# curl error
+		} else {
+			printf "Fetching %s at %s returned %s.\n", nick, $url, $code | stderr
+		}
+	}
+	END {
+		if ( changed ) {
+			for ( nick in following ) {
+				print nick, following[nick] > tempfile
+			}
+			system("mv " tempfile " " follow_file)
+		}
+	}'
 }
 
 read_key () {
