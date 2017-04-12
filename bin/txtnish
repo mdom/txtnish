@@ -789,6 +789,31 @@ following () {
 	fi
 }
 
+url () {
+	for url; do
+		curl -s "$url" | awk '
+			BEGIN {
+				url = "'"$url"'"
+			}
+			{
+				c = c $0
+			}
+			END {
+				if ( match(c,/<title>/) ) {
+					start = RSTART+RLENGTH
+					match(c,/<\/title>/)
+					len = RSTART-start
+					title = substr(c,start,len)
+					gsub(/^[ \t]+|[ \t]+$/, "", title)
+					sub(/\.$/,"", title)
+					print title " ⌘ " url
+				} else {
+					print url
+				}
+			}
+	'; done | tweet
+}
+
 # shellcheck disable=SC2120
 tweet () {
 	: >"$draft_file"
@@ -1213,6 +1238,7 @@ usage_main () {
 		    publish         Publish your twtfile.
 		    sync-followings Sync followings from remote file.
 		    mail            Send new tweets per mail.
+		    url             Share urls
 
 		  Options:
 		    -h, --help      Print a help message and exit.
@@ -1390,6 +1416,11 @@ main() {
 		tweet )
 			synopsis="Append a new tweet to your twtxt file."
 			arguments="[TWEET...]"
+			options="help,verbose"
+			;;
+		url )
+			synopsis="Share urls with your followers."
+			arguments="URL..."
 			options="help,verbose"
 			;;
 		sync-followings )
