@@ -35,6 +35,7 @@ sync_followings=""
 # sync_followings="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt"
 timeout=0
 verbose=0
+force=0
 
 http_proxy=""
 https_proxy=""
@@ -714,21 +715,35 @@ update () {
 }
 
 follow () {
-	new_nick=$1
-	new_url=$2
-
-	[ -n "$new_nick" ] || usage "Required parameter NICK is missing."
-	[ -n "$new_url"  ] || usage "Required parameter URL is missing."
+	[ -n "$1" ] || usage "Required parameter NICK is missing."
+	[ -n "$2" ] || usage "Required parameter URL is missing."
 
 	tempfile="$follow_file.$$"
-	while read -r nick url;do
-		if [ "$nick" = "$new_nick" ] || [ "$url" = "$new_url" ];then
-			warn "You're already following $nick at $url."
-		fi
-		printf "%s %s\n" "$nick" "$url";
-	done < "$follow_file" > "$tempfile"
-	printf "%s %s\n" "$new_nick" "$new_url" >> "$tempfile";
-	mv "$tempfile" "$follow_file"
+	awk '
+		BEGIN {
+			nick = "'"$1"'"
+			url  = "'"$2"'"
+			force  = '"$force"'
+			stderr = "cat >&2"
+		}
+		$1 == nick || $2 == url {
+			if ( force ) next
+			printf "You are already following %s at %s.\n", $1, $2 | stderr
+			exit 1
+		}
+		1
+		END {
+			print nick, url
+		}
+	' "$follow_file" > "$tempfile"
+
+	if [ $? -eq 0 ]; then
+		mv "$tempfile" "$follow_file"
+		return 0;
+	else
+		rm "$tempfile"
+		return 1;
+	fi
 }
 
 unfollow () {
@@ -1105,6 +1120,10 @@ call_mode () {
 				check_if_valid_option verbose
 				verbose=1
 				;;
+			-f | --force )
+				check_if_valid_option force
+				force=1
+				;;
 			-??* )
 				shift
 				## dash 0.5.7 can't handle direct expansion
@@ -1192,6 +1211,7 @@ EOF
 			max-procs )  printf "  -N, --max-procs NUM\n\tUse NUM parallel download processes.\n" ;;
 			search )     printf "  -S, --search EXP\n\tFilter tweets\n" ;;
 			config )     printf "  -c, --config CFG\n\tSpecify a custom config file location.\n" ;;
+			force )      printf "  -f, --force\n\tDisable safety checks and force action.\n" ;;
 		esac
 		options=${options#$c,}
 	done
@@ -1295,7 +1315,7 @@ main() {
 		follow )
 			synopsis="Add a new source to your followings."
 			arguments="NICK SOURCE"
-			options="help,verbose"
+			options="help,verbose,force"
 			;;
 		unfollow )
 			synopsis="Remove an existing source from your followings."
