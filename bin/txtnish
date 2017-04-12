@@ -579,9 +579,11 @@ process_stat_log () {
 	{
 		match($file, /[^/]+.txt$/)
 		nick= substr($file,RSTART,RLENGTH - 4 )
-		if ( $redirects > 0 && ( $code == 200 || $code == 304 )) {
-			following[nick] = $url
-			changed=1
+		if ( $code == 200 || $code == 304 ) {
+			if ( $redirects > 0 ) {
+				following[nick] = $url
+				changed=1
+			}
 		} else if ( $code == 410 ) {
 			delete following[nick];
 			changed=1
