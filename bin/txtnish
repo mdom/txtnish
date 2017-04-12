@@ -715,9 +715,6 @@ update () {
 }
 
 follow () {
-	[ -n "$1" ] || usage "Required parameter NICK is missing."
-	[ -n "$2" ] || usage "Required parameter URL is missing."
-
 	tempfile="$follow_file.$$"
 	awk '
 		BEGIN {
@@ -748,7 +745,6 @@ follow () {
 
 unfollow () {
 	_url_or_nick=$1
-	[ -n "$_url_or_nick" ] || usage "Required parameter NICK_OR_URL is missing."
 	tempfile="$follow_file.$$"
 	removed=
 	while read -r nick url;do
@@ -828,10 +824,6 @@ mailpipe () {
 }
 
 mail () {
-	if [ $# -eq 0 ];then
-		die "Missing required argument ADDRESS."
-	fi
-
 	have_cmd mail || die "mailx(1) not installed."
 
 	use_pager=0
@@ -1070,6 +1062,31 @@ set_optarg_bool () {
 	esac
 }
 
+check_arguments () {
+	awk '
+		BEGIN {
+			args_given = '"$1"'
+			args_expected = split("'"$2"'",args)
+			stderr = "cat >&2"
+
+			if ( args_given == args_expected ) exit 0
+
+			if ( args_given > args_expected )
+				if ( args[ args_expected ] !~ /\.\.\.\]?$/ ) {
+					print "Too many arguments." | stderr
+					exit 1
+				}
+
+			if ( args_given < args_expected )
+				for( i = 1; i <= args_expected; i++ )
+					if ( i > args_given && args[i] !~ /^\[.+\]$/ ) {
+						printf "Required argument %s missing.\n", args[i] | stderr
+						exit 1
+					}
+		}
+	'
+}
+
 call_mode () {
 	while [ -n "$1" ]; do
 		OPTION="$1"
@@ -1140,6 +1157,13 @@ call_mode () {
 		esac
 		shift "$SHIFT"
 	done
+
+	if [ -n "$arguments" ]; then
+		if ! check_arguments $# "$arguments"; then
+			usage
+			exit 1
+		fi
+	fi
 
 	case $mode in
 		*-* ) mode="${mode%-*}_${mode#*-}"
@@ -1351,7 +1375,7 @@ main() {
 			;;
 		mail )
 			synopsis="Mail new tweets."
-			arguments="ADDRESS ..."
+			arguments="ADDRESS..."
 			options="help,verbose,ascending,descending,update,no-update"
 			;;
 		mailpipe )
