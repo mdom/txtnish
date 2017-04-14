@@ -331,8 +331,11 @@ maybe_pager () {
 	fi
 }
 
+# Description: Prefixes every line in stdin with arguments
+# Synopsis: prefix column NICK URL PROPS
+
 prefix_columns () {
-	awk -v nick="$1" -v url="$2" -v props="$3" 'BEGIN{OFS="\t"}{print nick,url,props,$0}'
+	awk 'BEGIN{OFS="\t"}{print "'"$1"'", "'"$2"'", "'"$3"'",$0}'
 }
 
 filter_tweets () {
@@ -732,7 +735,7 @@ update () {
 	for logfile in "$log_dir"/http.log.*;do
 		[ -e "$logfile" ] || continue
 		_nick="${logfile##*.}"
-		awk -v nick="$_nick" '{print nick ": " $0 }' "$logfile" >&2
+		awk '{print "'"$_nick"'" ": " $0 }' "$logfile" >&2
 		rm "$logfile"
 	done
 }
@@ -891,7 +894,7 @@ timeline () {
 	case $1 in
 		*://* )
 			curl --compressed -Ss -L --user-agent "$user_agent" "$1" \
-				| awk -v url="$1" 'BEGIN{OFS="\t"}{ print url, url, "", $0 }' \
+				| awk 'BEGIN{OFS="\t"; url = "'"$1"'"}{ print url, url, "", $0 }' \
 				| display_tweets
 			exit 0
 			;;
