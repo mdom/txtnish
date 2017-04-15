@@ -267,6 +267,19 @@ color_hashtag=yellow
 
 To customize the behaviour of txtnish the user can override functions.
 
+### pre_tweet_hook
+
+This hook is called before a new tweet is appended to your twtfile. This can be
+useful if you're using txtnish on multiple devices and want to update your
+local twtfile before appending to it. There's a predefined function
+`sync_twtfile` that does exactly that.
+
+```sh
+pre_tweet_hook () {
+	sync_twtfile
+}
+```
+
 ### post_tweet_hook
 
 post_tweet_hook is called after txtnish has appended new tweets to your
