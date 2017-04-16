@@ -785,15 +785,16 @@ follow () {
 }
 
 unfollow () {
-	_url_or_nick=$1
 	tempfile="$follow_file.$$"
 	removed=
+
 	while read -r nick url;do
-		case $_url_or_nick in
-			$nick | $url  ) removed=1 ;;
+		case $1 in
+			"$nick" | "$url"  ) removed=1 ;;
 			* ) printf "%s %s\n" "$nick" "$url" ;;
 		esac
 	done < "$follow_file" > "$tempfile"
+
 	if [ -n "$removed" ];then
 		mv "$tempfile" "$follow_file"
 	else
