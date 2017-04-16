@@ -756,6 +756,11 @@ update () {
 }
 
 follow () {
+
+	if [ "$1" = "$nick" ]; then
+		die "You can't follow someone under your nick.";
+	fi
+
 	tempfile="$follow_file.$$"
 	awk '
 		BEGIN {
