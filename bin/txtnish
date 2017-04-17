@@ -596,6 +596,12 @@ process_stat_log () {
 		return ""
 	}
 
+	function redirect ( nick, location ) {
+		following[nick] = location
+		printf "Following %s now at %s.\n", nick, following[nick] | stderr
+		changed = 1
+	}
+
 	BEGIN {
 		tempfile="'"$tempfile"'"
 		follow_file="'"$follow_file"'"
@@ -612,13 +618,11 @@ process_stat_log () {
 		match($file, /[^/]+.txt$/)
 		nick = substr($file,RSTART,RLENGTH - 4 )
 		location = get_location($file)
-		if ( location ) {
-			following[nick] = location
-			changed = 1
+		if ( location && following[nick] != location ) {
+			redirect( nick, location )
 		} else if ( $code == 200 || $code == 304 ) {
 			if ( $redirects > 0 ) {
-				following[nick] = $url
-				changed = 1
+				redirect( nick, $url )
 			}
 		} else if ( $code == 410 ) {
 			delete following[nick];
