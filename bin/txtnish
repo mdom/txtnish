@@ -582,6 +582,20 @@ post_tweet_hook () {
 process_stat_log () {
 	tempfile="$follow_file.$$"
 	awk '
+
+	function get_location (file,   line, meta) {
+		while((getline line < file) > 0 ) {
+			if ( line ~ /^#[ \t]*[^ \t=]+[ \t]*=[ \t]*[^ \t]+/ ) {
+				sub(/^#[ \t]*/,"", line)
+				split(line,meta,/[ \t]*=[ \t]*/)
+				if ( meta[1] == "url" ) {
+					return meta[2]
+				}
+			}
+		}
+		return ""
+	}
+
 	BEGIN {
 		tempfile="'"$tempfile"'"
 		follow_file="'"$follow_file"'"
@@ -596,11 +610,15 @@ process_stat_log () {
 	}
 	{
 		match($file, /[^/]+.txt$/)
-		nick= substr($file,RSTART,RLENGTH - 4 )
-		if ( $code == 200 || $code == 304 ) {
+		nick = substr($file,RSTART,RLENGTH - 4 )
+		location = get_location($file)
+		if ( location ) {
+			following[nick] = location
+			changed = 1
+		} else if ( $code == 200 || $code == 304 ) {
 			if ( $redirects > 0 ) {
 				following[nick] = $url
-				changed=1
+				changed = 1
 			}
 		} else if ( $code == 410 ) {
 			delete following[nick];
