@@ -193,6 +193,15 @@ format_msg_html () {
 				} else if ( match(str,/https?:\/\/[^ ]+/) ) {
 					new_str = new_str substr(str,1,RSTART-1)
 					url = substr(str,RSTART,RLENGTH)
+
+					# a trailing point or comma could be
+					# part of the url, but it is probably a
+					# punctuation mark.
+					if ( substr(url,length(url),1) ~ /[,.]/ ) {
+						url = substr(url,1,length(url)-1)
+						RSTART -= 1
+					}
+
 					new_str = new_str "<a href=\"" url "\">" url "</a>"
 					str = substr(str,RSTART+RLENGTH)
 				} else {
