@@ -1131,7 +1131,7 @@ check_if_valid_option () {
 
 set_optarg () {
 	case $1 in
-		-??* )
+		-[!-]* )
 			[ -n "${1#??}" ] || usage "Option ${1%%${1#??}} requires an argument."
 			OPTARG="${1#*??}"
 			;;
