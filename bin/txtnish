@@ -166,7 +166,84 @@ maybe_update () {
 	fi
 }
 
-format_msg (){
+format_msg_html () {
+	awk '
+		function escape (str) {
+			gsub(/&/,"\\&amp;",str)
+			gsub(/</,"\\&lt;",str)
+			gsub(/>/,"\\&gt;",str)
+			return str
+		}
+
+		function linkify (str,   new_str, n, url, nick) {
+			while ( str ) {
+				if ( match(str,/@&lt;[^>]+&gt;/) ) {
+					new_str = new_str substr(str,1,RSTART-1)
+					n = split(substr(str,RSTART+5,RLENGTH-9),fields," ")
+					if ( n == 1 ) {
+						nick = ""
+						url = fields[1]
+					} else {
+						nick = fields[1]
+						url = fields[2]
+					}
+
+					new_str = new_str "<a href=\"" url "\">@" nick "</a>"
+					str = substr(str,RSTART+RLENGTH)
+				} else if ( match(str,/https?:\/\/[^ ]+/) ) {
+					new_str = new_str substr(str,1,RSTART-1)
+					url = substr(str,RSTART,RLENGTH)
+					new_str = new_str "<a href=\"" url "\">" url "</a>"
+					str = substr(str,RSTART+RLENGTH)
+				} else {
+					new_str = new_str str
+					str = ""
+				}
+                        }
+                        return new_str
+		}
+
+		BEGIN {
+			FS = "\t"
+			srand()
+			now = srand()
+			printf "<!doctype html>\n" \
+				"<html>" \
+					"<head>" \
+						"<meta charset=\"utf-8\">" \
+						"<style>" \
+							".nick { color: red }" \
+							"p { max-width: 60em; }" \
+						"</style>" \
+					"</head>"
+		}
+		{
+			nick=$1;url=$2;props=$3;ts=$4;msg=$5
+			seconds=now-ts
+			if ( seconds >  86400 ) {
+				ts = int(seconds / 86400) " days ago"
+			} else if ( seconds > 3600 ) {
+				ts = int(seconds / 3600) " hours ago"
+			} else if ( seconds > 60 ) {
+				ts = int(seconds / 60) " minutes ago"
+			} else {
+				ts = seconds " seconds ago"
+			}
+
+			nick = escape(nick)
+			msg = escape(msg)
+			msg = linkify(msg)
+
+			print "<p>* <span class=\"nick\">" nick "</span> (" ts ")<br/>" msg "</p>"
+		}
+
+		END {
+			print "</html>"
+		}
+	'
+}
+
+format_msg () {
 
 	if ! have_cmd "${formatter%% *}";then
 		if have_cmd fold; then
@@ -360,6 +437,7 @@ filter_tweets () {
 display_tweets () {
 	case $theme in
 		raw ) normalize_tweets | filter_tweets | sort_tweets ;;
+		html ) normalize_tweets | filter_tweets | sort_tweets | format_msg_html ;;
 		* ) normalize_tweets | filter_tweets | sort_tweets | collapse_mentions | format_msg| maybe_pager ;;
 	esac
 }
