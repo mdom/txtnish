@@ -48,8 +48,6 @@ scp_host=""
 
 http_backend_args=""
 
-raw_timeline=0
-
 # this is the password for mailpipe. Mailpipe expects the first line of the
 # mail to be in the form "password $mail_password"
 mail_password=""
@@ -360,11 +358,10 @@ filter_tweets () {
 }
 
 display_tweets () {
-	if [ "$raw_timeline" -eq 1 ];then
-		normalize_tweets | filter_tweets | sort_tweets
-	else
-		normalize_tweets | filter_tweets | sort_tweets | collapse_mentions | format_msg | maybe_pager
-	fi
+	case $theme in
+		raw ) normalize_tweets | filter_tweets | sort_tweets ;;
+		* ) normalize_tweets | filter_tweets | sort_tweets | collapse_mentions | format_msg| maybe_pager ;;
+	esac
 }
 
 normalize_tweets () {
@@ -1186,6 +1183,11 @@ call_mode () {
 		OPTION="$1"
 		SHIFT=1
 		case $1 in
+			--theme | --theme=?* )
+				check_if_valid_option theme
+				set_optarg "$@"
+				theme="$OPTARG"
+				;;
 			-l | --limit | --limit=?* | -l?* )
 				check_if_valid_option limit
 				set_optarg "$@"
@@ -1225,7 +1227,7 @@ call_mode () {
 				;;
 			-R | --raw )
 				check_if_valid_option raw
-				raw_timeline=1
+				theme=raw
 				;;
 			-v | --verbose )
 				check_if_valid_option verbose
@@ -1331,6 +1333,7 @@ EOF
 			search )     printf "  -S, --search EXP\n\tFilter tweets\n" ;;
 			config )     printf "  -c, --config CFG\n\tSpecify a custom config file location.\n" ;;
 			force )      printf "  -f, --force\n\tDisable safety checks and force action.\n" ;;
+			theme )      printf "  --theme THEME\n\tUse theme to display timeline.\n" ;;
 		esac
 		options=${options#$c,}
 	done
@@ -1448,7 +1451,7 @@ main() {
 		timeline | view )
 			synopsis="Display timeline."
 			arguments="[NICK...]"
-			options="help,limit,verbose,ascending,descending,update,no-update,max-procs,search,pager,no-pager,raw"
+			options="help,limit,verbose,ascending,descending,update,no-update,max-procs,search,pager,no-pager,raw,theme"
 			;;
 		reply )
 			synopsis="Reply to tweets."
