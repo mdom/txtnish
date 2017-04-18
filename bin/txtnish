@@ -1275,6 +1275,11 @@ call_mode () {
 				set_optarg "$@"
 				theme="$OPTARG"
 				;;
+			--timeout | --timeout=?* )
+				check_if_valid_option timeout
+				set_optarg "$@"
+				timeout="$OPTARG"
+				;;
 			-l | --limit | --limit=?* | -l?* )
 				check_if_valid_option limit
 				set_optarg "$@"
@@ -1421,6 +1426,7 @@ EOF
 			config )     printf "  -c, --config CFG\n\tSpecify a custom config file location.\n" ;;
 			force )      printf "  -f, --force\n\tDisable safety checks and force action.\n" ;;
 			theme )      printf "  --theme THEME\n\tUse theme to display timeline.\n" ;;
+			timeout )    printf "  --timeout SECONDS\n\tMaximum time in seconds to fetch a feed..\n" ;;
 		esac
 		options=${options#$c,}
 	done
@@ -1519,7 +1525,7 @@ main() {
 	case $mode in
 		update )
 			synopsis="Fetching new twtfiles from all your sources."
-			options="help,verbose,max-procs"
+			options="help,verbose,max-procs,timeout"
 			;;
 		follow )
 			synopsis="Add a new source to your followings."
@@ -1538,12 +1544,12 @@ main() {
 		timeline | view )
 			synopsis="Display timeline."
 			arguments="[NICK...]"
-			options="help,limit,verbose,ascending,descending,update,no-update,max-procs,search,pager,no-pager,raw,theme"
+			options="help,limit,verbose,ascending,descending,update,no-update,max-procs,search,pager,no-pager,raw,theme,timeout"
 			;;
 		reply )
 			synopsis="Reply to tweets."
 			arguments="[NICK]"
-			options="help,limit,verbose,ascending,descending,update,no-update,max-procs,search"
+			options="help,limit,verbose,ascending,descending,update,no-update,max-procs,search,timeout"
 			;;
 		publish )
 			synopsis="Publish your twtfile."
