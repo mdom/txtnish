@@ -48,6 +48,8 @@ scp_host=""
 
 http_backend_args=""
 
+theme="default"
+
 # this is the password for mailpipe. Mailpipe expects the first line of the
 # mail to be in the form "password $mail_password"
 mail_password=""
@@ -447,7 +449,8 @@ display_tweets () {
 	case $theme in
 		raw ) normalize_tweets | filter_tweets | sort_tweets ;;
 		html ) normalize_tweets | filter_tweets | sort_tweets | format_msg_html ;;
-		* ) normalize_tweets | filter_tweets | sort_tweets | collapse_mentions | format_msg| maybe_pager ;;
+		default ) normalize_tweets | filter_tweets | sort_tweets | collapse_mentions | format_msg| maybe_pager ;;
+		* ) die "Unknown theme $theme." ;;
 	esac
 }
 
