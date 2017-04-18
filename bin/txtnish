@@ -1332,7 +1332,11 @@ call_mode () {
 				check_if_valid_option force
 				force=1
 				;;
-			-??* )
+			-- )
+				shift
+				break
+				;;
+			-[!-]?* )
 				shift
 				## dash 0.5.7 can't handle direct expansion
 				_tmp=${OPTION#??}
