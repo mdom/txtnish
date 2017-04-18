@@ -1426,7 +1426,7 @@ EOF
 			config )     printf "  -c, --config CFG\n\tSpecify a custom config file location.\n" ;;
 			force )      printf "  -f, --force\n\tDisable safety checks and force action.\n" ;;
 			theme )      printf "  --theme THEME\n\tUse theme to display timeline.\n" ;;
-			timeout )    printf "  --timeout SECONDS\n\tMaximum time in seconds to fetch a feed..\n" ;;
+			timeout )    printf "  --timeout SECONDS\n\tMaximum time in seconds to fetch a feed.\n" ;;
 		esac
 		options=${options#$c,}
 	done
