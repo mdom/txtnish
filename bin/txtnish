@@ -179,7 +179,7 @@ format_msg_html () {
 
 		function linkify (str,   new_str, n, url, nick) {
 			while ( str ) {
-				if ( match(str,/@&lt;[^>]+&gt;/) ) {
+				if ( match(str,/@&lt;[^&]+&gt;/) ) {
 					new_str = new_str substr(str,1,RSTART-1)
 					n = split(substr(str,RSTART+5,RLENGTH-9),fields," ")
 					if ( n == 1 ) {
