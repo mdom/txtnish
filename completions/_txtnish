@@ -1,0 +1,35 @@
+#compdef txtnish
+# ---------------------------------------------------------------------
+# Copyright (c) 2017 Timur Demin
+# All rights reserved.
+#
+# This file is part of txtnish.
+#
+# txtnish is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# txtnish is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with txtnish. If not, see <http://www.gnu.org/licenses/>.
+
+_alternative 'args:custom args:((\
+		follow\:"Add a new source to your followings" \
+		following\:"Return the list of sources you are following" \
+		mail\:"Send new tweets per mail" \
+		publish\:"Publish your twtfile" \
+		reply\:"Reply to tweets" \
+		sync-followings\:"Sync followings from remote file" \
+		timeline\:"Retrieve your personal timeline" \
+		tweet\:"Append a new tweet to your twtxt file" \
+		unfollow\:"Remove an existing source from your followings" \
+		url\:"Share urls" \
+		-h\:"Print a help message and exit" \
+		-V\:"Print version and exit"))' \
+		"files:filenames:($(/bin/ls ~/.cache/txtnish/twtfiles | sed 's/.txt//g'))"
+
