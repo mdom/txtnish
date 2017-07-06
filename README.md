@@ -99,8 +99,8 @@ txtnish timeline -S 'nick == "mdom" && msg ~ /#twtxt/'
 
 # Configuration
 
-At startup txtnish checks for `~/.config/txtnish/config` exists and
-will source it if is exists. The configuration file must be a valid
+At startup txtnish checks whether `~/.config/txtnish/config` exists and
+will source it if it exists. The configuration file must be a valid
 shell script.
 
 ## General
