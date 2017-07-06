@@ -22,7 +22,7 @@ your unique timeline out of them, depending on which files you track. The
 format is simple, human readable, and integrates well with UNIX command line
 utilities.
 
-All subcommand of *txtnish* provides extensive help, so don't hesitate
+All subcommands of *txtnish* provide extensive help, so don't hesitate
 to call them with the `-h` option.
 
 If you are a new user, there is a quickstart command that will ask you some
