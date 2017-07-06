@@ -183,9 +183,9 @@ Verify pgp signatures and show the result in the timeline if set to 1. Defaults 
 
 ### ipfs_gateway
 
-When you subscribe to a ipns:// address, txtnish will call this gateway to get
-the users twtfile. Defaults to http://localhost:8080 and falls back to
-https://ipfs.io if txtnish can't reach the gateway.
+When you subscribe to an `ipns://` address, txtnish will call this gateway to get
+the users twtfile. Defaults to `http://localhost:8080` and falls back to
+`https://ipfs.io` if txtnish can't reach the gateway.
 
 ## Publish with scp
 
