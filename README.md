@@ -51,7 +51,7 @@ Appends a new tweet to your twtxt file. There are three different ways
 to input tweets. You can either pipe them into tweet, or pass them along
 as arguments. When you call `txtnish tweet` without any arguments and
 it's not connected to a pipe, it will call `$EDITOR` for you and tweet
-any line as seperate tweet.
+any line as a separate tweet.
 
 ## timeline
 
