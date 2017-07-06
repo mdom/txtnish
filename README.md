@@ -128,7 +128,7 @@ to zero.
 ### use_color
 
 If the output should be colorized with ANSI escape sequences. See the
-section *COLORS* on how to change the color settings. Default to 1.
+section *COLORS* on how to change the color settings. Defaults to 1.
 
 ### pager
 
