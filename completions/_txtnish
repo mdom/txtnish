@@ -31,5 +31,6 @@ _alternative 'args:custom args:((\
 		url\:"Share urls" \
 		-h\:"Print a help message and exit" \
 		-V\:"Print version and exit"))' \
-		"files:filenames:($(/bin/ls ~/.cache/txtnish/twtfiles | sed 's/.txt//g'))"
+		"files:filenames:($([ -d ${HOME}/.cache/txtnish/twtfiles ] && /bin/ls \
+		 ~/.cache/txtnish/twtfiles | sed 's/.txt//g'))"
 

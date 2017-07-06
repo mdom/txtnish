@@ -11,8 +11,8 @@ $ txtnish timeline
 
 # Description
 
-*txtnish* is a client for [twtxt](https://github.com/buckket/twtxt)
-the decentralised, minimalist microblogging service for hackers.
+*txtnish* is a client for [twtxt](https://github.com/buckket/twtxt)–the 
+decentralised, minimalist microblogging service for hackers.
 
 Instead of signing up at a closed and/or regulated microblogging platform,
 getting your status updates out with twtxt is as easy as putting them in a
@@ -22,7 +22,7 @@ your unique timeline out of them, depending on which files you track. The
 format is simple, human readable, and integrates well with UNIX command line
 utilities.
 
-All subcommand of *txtnish* provides extensive help, so don't hesitate
+All subcommands of *txtnish* provide extensive help, so don't hesitate
 to call them with the `-h` option.
 
 If you are a new user, there is a quickstart command that will ask you some
@@ -34,13 +34,13 @@ $ txtnish quickstart
 
 # Installation
 
-*txtnish* only depends on tools you normally find in a posix environment:
-awk, sort, cut and sh. There are only two exceptions: You need curl
-to download twtxt files and a xargs that support parallel processing
-via *-P*. You can use a xargs without, but then txtnish falls back to
+*txtnish* only depends on tools you normally find in a POSIX environment:
+*awk*, *sort*, *cut* and *sh*. There are only two exceptions: you need *curl*
+to download twtxt files and a *xargs* that support parallel processing
+via *-P*. You can use a *xargs* without, but then *txtnish* falls back to
 downloading one url after another.
 
-Installation itself is as easy as it gets: Just copy the script somewhere
+Installation itself is as easy as it gets: just copy the script somewhere
 in your *PATH*.
 
 # Subcommands
@@ -51,7 +51,7 @@ Appends a new tweet to your twtxt file. There are three different ways
 to input tweets. You can either pipe them into tweet, or pass them along
 as arguments. When you call `txtnish tweet` without any arguments and
 it's not connected to a pipe, it will call `$EDITOR` for you and tweet
-any line as seperate tweet.
+any line as a separate tweet.
 
 ## timeline
 
@@ -72,7 +72,7 @@ Removes an existing source from your followings.
 
 ## following
 
-Print the list of the sources you're following.
+Prints the list of the sources you're following.
 
 ## reply
 
@@ -83,7 +83,7 @@ be tweeted.
 # Search tweets
 
 You can provide a search expression to filter your timeline with the flag
-`-S`. The search expression is a awk conditional with four predefined
+`-S`. The search expression is an *awk* conditional with four predefined
 variables:
 
 * msg: the message itself
@@ -99,15 +99,15 @@ txtnish timeline -S 'nick == "mdom" && msg ~ /#twtxt/'
 
 # Configuration
 
-At startup txtnish checks for `~/.config/txtnish/config` exists and
-will source it if is exists. The configuration file must be a valid
+At startup txtnish checks whether `~/.config/txtnish/config` exists and
+will source it if it exists. The configuration file must be a valid
 shell script.
 
 ## General
 
 ### limit
 
-How many tweets should be shown in timeline. Default to 20.
+How many tweets should be shown in timeline. Defaults to 20.
 
 ### formatter
 
@@ -127,12 +127,12 @@ to zero.
 
 ### use_color
 
-If the output should be colorized with ansi escape sequences. See the
-section *COLORS* how to change the color settings. Default to 1.
+If the output should be colorized with ANSI escape sequences. See the
+section *COLORS* on how to change the color settings. Defaults to 1.
 
 ### pager
 
-Which pager to use if use_pager is enabled. Default to `less -R` in order
+Which pager to use if `use_pager` is enabled. Default to `less -R` in order
 to display colors. This can be toggled with `-p` or `-P` to enable or
 disable  the pager. Defaults to 1.
 
@@ -183,9 +183,9 @@ Verify pgp signatures and show the result in the timeline if set to 1. Defaults 
 
 ### ipfs_gateway
 
-When you subscribe to a ipns:// address, txtnish will call this gateway to get
-the users twtfile. Defaults to http://localhost:8080 and falls back to
-https://ipfs.io if txtnish can't reach the gateway.
+When you subscribe to an `ipns://` address, txtnish will call this gateway to get
+the users twtfile. Defaults to `http://localhost:8080` and falls back to
+`https://ipfs.io` if txtnish can't reach the gateway.
 
 ## Publish with scp
 
@@ -225,11 +225,11 @@ You will need the ipfs tools and a running daemon to publish to ipfs.
 
 ### ipfs_wrap_with_dir
 
-Call ipfs add with --wrap-with-dir if set to 1. Defaults to 0.
+Call `ipfs add` with `--wrap-with-dir` if set to 1. Defaults to 0.
 
 ### ipfs_recursive
 
-Call ipfs add with --recursive if set to 1. The complete directory of
+Call `ipfs add` with `--recursive` if set to 1. The complete directory of
 your twtfile will be published. Defaults to 0.
 
 ## Colors
@@ -265,7 +265,7 @@ color_hashtag=yellow
 
 ## Hooks
 
-To customize the behaviour of txtnish the user can override functions.
+To customize the behaviour of *txtnish* the user can override functions.
 
 ### pre_tweet_hook
 
