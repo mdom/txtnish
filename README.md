@@ -34,10 +34,10 @@ $ txtnish quickstart
 
 # Installation
 
-*txtnish* only depends on tools you normally find in a posix environment:
-awk, sort, cut and sh. There are only two exceptions: you need curl
-to download twtxt files and a xargs that support parallel processing
-via *-P*. You can use a xargs without, but then txtnish falls back to
+*txtnish* only depends on tools you normally find in a POSIX environment:
+*awk*, *sort*, *cut* and *sh*. There are only two exceptions: you need *curl*
+to download twtxt files and a *xargs* that support parallel processing
+via *-P*. You can use a *xargs* without, but then *txtnish* falls back to
 downloading one url after another.
 
 Installation itself is as easy as it gets: just copy the script somewhere
