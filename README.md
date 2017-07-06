@@ -11,8 +11,8 @@ $ txtnish timeline
 
 # Description
 
-*txtnish* is a client for [twtxt](https://github.com/buckket/twtxt)
-the decentralised, minimalist microblogging service for hackers.
+*txtnish* is a client for [twtxt](https://github.com/buckket/twtxt)–the 
+decentralised, minimalist microblogging service for hackers.
 
 Instead of signing up at a closed and/or regulated microblogging platform,
 getting your status updates out with twtxt is as easy as putting them in a
