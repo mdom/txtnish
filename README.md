@@ -265,7 +265,7 @@ color_hashtag=yellow
 
 ## Hooks
 
-To customize the behaviour of txtnish the user can override functions.
+To customize the behaviour of *txtnish* the user can override functions.
 
 ### pre_tweet_hook
 
