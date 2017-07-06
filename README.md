@@ -72,7 +72,7 @@ Removes an existing source from your followings.
 
 ## following
 
-Print the list of the sources you're following.
+Prints the list of the sources you're following.
 
 ## reply
 
