@@ -132,7 +132,7 @@ section *COLORS* on how to change the color settings. Default to 1.
 
 ### pager
 
-Which pager to use if use_pager is enabled. Default to `less -R` in order
+Which pager to use if `use_pager` is enabled. Default to `less -R` in order
 to display colors. This can be toggled with `-p` or `-P` to enable or
 disable  the pager. Defaults to 1.
 
