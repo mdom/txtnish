@@ -107,7 +107,7 @@ shell script.
 
 ### limit
 
-How many tweets should be shown in timeline. Default to 20.
+How many tweets should be shown in timeline. Defaults to 20.
 
 ### formatter
 
