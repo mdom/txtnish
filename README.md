@@ -229,7 +229,7 @@ Call `ipfs add` with `--wrap-with-dir` if set to 1. Defaults to 0.
 
 ### ipfs_recursive
 
-Call ipfs add with --recursive if set to 1. The complete directory of
+Call `ipfs add` with `--recursive` if set to 1. The complete directory of
 your twtfile will be published. Defaults to 0.
 
 ## Colors
