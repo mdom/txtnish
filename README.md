@@ -225,7 +225,7 @@ You will need the ipfs tools and a running daemon to publish to ipfs.
 
 ### ipfs_wrap_with_dir
 
-Call ipfs add with --wrap-with-dir if set to 1. Defaults to 0.
+Call `ipfs add` with `--wrap-with-dir` if set to 1. Defaults to 0.
 
 ### ipfs_recursive
 
