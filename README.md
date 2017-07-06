@@ -83,7 +83,7 @@ be tweeted.
 # Search tweets
 
 You can provide a search expression to filter your timeline with the flag
-`-S`. The search expression is a awk conditional with four predefined
+`-S`. The search expression is an *awk* conditional with four predefined
 variables:
 
 * msg: the message itself
