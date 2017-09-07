@@ -354,8 +354,8 @@ format_msg () {
 
 			nick = color_nick nick reset
 			ts = color_time ts reset
-			gsub(/#[[:alnum:]_]+/, color_hashtag "&" reset, msg)
-			gsub(/@[[:alnum:]_]+/, color_mention "&" reset, msg)
+			gsub(/#[[:alnum:]_-]+/, color_hashtag "&" reset, msg)
+			gsub(/@[[:alnum:]_-]+/, color_mention "&" reset, msg)
 		}
 		fmt = ENVIRON["formatter"]
 		printf "* %s (%s)", nick, ts
