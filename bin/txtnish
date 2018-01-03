@@ -900,20 +900,31 @@ follow () {
 
 unfollow () {
 	tempfile="$follow_file.$$"
-	removed=
 
-	while read -r nick url;do
-		case $1 in
-			"$nick" | "$url"  ) removed=1 ;;
-			* ) printf "%s %s\n" "$nick" "$url" ;;
-		esac
-	done < "$follow_file" > "$tempfile"
-
-	if [ -n "$removed" ];then
-		mv "$tempfile" "$follow_file"
-	else
-		die "You're not following $_url_or_nick."
-	fi
+	UNFOLLOW="$*" awk '
+		BEGIN {
+			split(ENVIRON["UNFOLLOW"], unfollow, " ")
+			stderr = "cat >&2"
+		}
+		{
+			remove=0
+			for ( idx in unfollow ) {
+				if ( unfollow[idx] == $1 || unfollow[idx] == $2 ) {
+					remove=1
+					delete unfollow[idx]
+					break
+				}
+			}
+			if ( remove == 0 ) {
+				print
+			}
+		}
+		END {
+			for ( idx in unfollow )  {
+				printf "You are not following %s.\n", unfollow[idx] | stderr
+			}
+		}
+	' < "$follow_file" > "$tempfile" && mv "$tempfile" "$follow_file"
 }
 
 following () {
@@ -1541,7 +1552,7 @@ main() {
 			;;
 		unfollow )
 			synopsis="Remove an existing source from your followings."
-			arguments="NICK"
+			arguments="NICK..."
 			options="help,verbose"
 			;;
 		following )
