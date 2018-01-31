@@ -887,15 +887,7 @@ follow () {
 		END {
 			print nick, url
 		}
-	' "$follow_file" > "$tempfile"
-
-	if [ $? -eq 0 ]; then
-		mv "$tempfile" "$follow_file"
-		return 0;
-	else
-		rm "$tempfile"
-		return 1;
-	fi
+	' "$follow_file" > "$tempfile" && mv "$tempfile" "$follow_file"
 }
 
 unfollow () {
