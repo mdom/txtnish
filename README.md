@@ -105,6 +105,10 @@ shell script.
 
 ## General
 
+### awk
+
+Path to the awk binary. Defaults to awk.
+
 ### limit
 
 How many tweets should be shown in timeline. Defaults to 20.

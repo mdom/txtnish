@@ -32,6 +32,7 @@ ipfs_recursive=0
 ipfs_gateway=http://localhost:8080
 nick="${USER}"
 sync_followings=""
+awk=awk
 # sync_followings="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt"
 timeout=0
 verbose=0
@@ -169,7 +170,7 @@ maybe_update () {
 }
 
 format_msg_html () {
-	awk '
+	$awk '
 		function escape (str) {
 			gsub(/&/,"\\&amp;",str)
 			gsub(/</,"\\&lt;",str)
@@ -265,7 +266,7 @@ format_msg () {
 	fi
 
 	export color_nick color_time color_hashtag color_mention use_color formatter
-	awk '
+	$awk '
 		function colors_to_escape ( color,  fgc, bgc, n, c, attr ) {
 			n = split(color,c,/ /)
 			for (i=1; i<=n; i++ ) {
@@ -372,13 +373,13 @@ sort_tweets () {
 		* ) die "Sort order must be either ascending or descending." ;;
 	esac
 
-	awk 'BEGIN { FS=OFS="\t" }{ split($4,a,/\./); print $0, a[0] ? a[0] :0, a[1] }' |\
+	$awk 'BEGIN { FS=OFS="\t" }{ split($4,a,/\./); print $0, a[0] ? a[0] :0, a[1] }' |\
 		sort -rn -k6,6 -k7,7 -t "$TAB" | \
 		limit_uniq_tweets
 }
 
 limit_uniq_tweets () {
-	awk '
+	$awk '
 		BEGIN {
 			FS=OFS="\t"
 			limit='"$limit"'
@@ -421,11 +422,11 @@ maybe_pager () {
 # Synopsis: prefix column NICK URL PROPS
 
 prefix_columns () {
-	awk 'BEGIN{OFS="\t"}{print "'"$1"'", "'"$2"'", "'"$3"'",$0}'
+	$awk 'BEGIN{OFS="\t"}{print "'"$1"'", "'"$2"'", "'"$3"'",$0}'
 }
 
 filter_tweets () {
-	awk '
+	$awk '
 		BEGIN {
 			FS=OFS="\t"
 			last_timeline = "'"$last_timeline"'"
@@ -455,7 +456,7 @@ display_tweets () {
 }
 
 normalize_tweets () {
-	awk '
+	$awk '
 		BEGIN{
 			FS=OFS="\t"
 			rfc3339 = "^([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\\.[0-9]+)?(([Zz])|([\\+|\\-]([01][0-9]|2[0-3]):[0-5][0-9]))$"
@@ -546,7 +547,7 @@ gpg_verify () {
 collapse_mentions () {
 	## TODO this *has* to be easier
 	export follow_file nick twturl
-	awk '
+	$awk '
 		function normalize_url (url,  host) {
 			sub(/^http:/,"https:",url)
 
@@ -599,7 +600,7 @@ collapse_mentions () {
 
 expand_mentions () {
 	export follow_file nick twturl
-	awk '
+	$awk '
 		BEGIN {
 			FS=" "
 			while ( (getline < ENVIRON["follow_file"] ) > 0 ) {
@@ -668,7 +669,7 @@ post_tweet_hook () {
 
 process_stat_log () {
 	tempfile="$follow_file.$$"
-	awk '
+	$awk '
 
 	function get_location (file,   line, meta) {
 		while((getline line < file) > 0 ) {
@@ -786,7 +787,7 @@ set_timestamp () {
 	if [ -e "$cache_dir/timestamps/$1" ];then
 		get_timestamp "$@"
 	fi
-	awk 'BEGIN{ srand(); print srand() > "'"$cache_dir/timestamps/$1"'"}'
+	$awk 'BEGIN{ srand(); print srand() > "'"$cache_dir/timestamps/$1"'"}'
 }
 
 get_timestamp () {
@@ -840,7 +841,7 @@ update () {
 		if [ $# -eq 0 ];then
 			cat "$follow_file"
 		else
-			printf "%s\n" "$@" | awk '
+			printf "%s\n" "$@" | $awk '
 				BEGIN {
 					follow_file = "'"$follow_file"'"
 					while ((getline < follow_file) > 0 )
@@ -859,7 +860,7 @@ update () {
 	for logfile in "$log_dir"/http.log.*;do
 		[ -e "$logfile" ] || continue
 		_nick="${logfile##*.}"
-		awk '{print "'"$_nick"'" ": " $0 }' "$logfile" >&2
+		$awk '{print "'"$_nick"'" ": " $0 }' "$logfile" >&2
 		rm "$logfile"
 	done
 }
@@ -871,7 +872,7 @@ follow () {
 	fi
 
 	tempfile="$follow_file.$$"
-	awk '
+	$awk '
 		BEGIN {
 			nick = "'"$1"'"
 			url  = "'"$2"'"
@@ -893,7 +894,7 @@ follow () {
 unfollow () {
 	tempfile="$follow_file.$$"
 
-	UNFOLLOW="$*" awk '
+	UNFOLLOW="$*" $awk '
 		BEGIN {
 			split(ENVIRON["UNFOLLOW"], unfollow, " ")
 			stderr = "cat >&2"
@@ -927,7 +928,7 @@ following () {
 
 url () {
 	for url; do
-		curl -s "$url" | awk '
+		curl -s "$url" | $awk '
 			BEGIN {
 				url = "'"$url"'"
 			}
@@ -992,7 +993,7 @@ mailpipe () {
 		die "You have to set mail_password!"
 	fi
 	# shellcheck disable=SC2119
-	awk '
+	$awk '
 		NR==1,/^$/ {next }
 		!pw_seen {
 			if ( "password '"$mail_password"'" != $0 ) {
@@ -1027,7 +1028,7 @@ timeline () {
 	case $1 in
 		*://* )
 			curl --compressed -Ss -L --user-agent "$user_agent" "$1" \
-				| awk 'BEGIN{OFS="\t"; url = "'"$1"'"}{ print url, url, "", $0 }' \
+				| $awk 'BEGIN{OFS="\t"; url = "'"$1"'"}{ print url, url, "", $0 }' \
 				| display_tweets
 			exit 0
 			;;
@@ -1046,7 +1047,7 @@ timeline () {
 		done
 		printf "%s %s\n" "$nick" "$twturl"
 	else
-		printf "%s\n" "$@" | awk '
+		printf "%s\n" "$@" | $awk '
 			BEGIN {
 				follow_file = "'"$follow_file"'"
 				while ( (getline < follow_file) > 0 )
@@ -1100,7 +1101,7 @@ publish () {
 
 		# shellcheck disable=SC2086
 		if ipfs add -q $_ipfs_args "$_ipfs_path" > "$cache_dir/ipfs";then
-			awk 'END{ print $1 }' "$cache_dir/ipfs" | xargs ipfs name "publish"
+			$awk 'END{ print $1 }' "$cache_dir/ipfs" | xargs ipfs name "publish"
 		fi
 	fi
 	if [ "$sign_twtfile" -eq 1 ];then
@@ -1133,7 +1134,7 @@ quickstart () {
 	if [ -e "${XDG_CONFIG_HOME:-$HOME/.config}/twtxt/config" ];then
 		if ! [ -e "$follow_file" ] && yesno "Import followings from twtxt?" ;then
 
-			twtxt following | awk '{ print $1, $3 }' > "$follow_file"
+			twtxt following | $awk '{ print $1, $3 }' > "$follow_file"
 		fi
 
 		if ! [ -e "$config_file" ] && yesno "Import settings from twtxt?" ;then
@@ -1247,7 +1248,7 @@ set_optarg_bool () {
 }
 
 check_arguments () {
-	awk '
+	$awk '
 		BEGIN {
 			args_given = '"$1"'
 			args_expected = split("'"$2"'",args)
@@ -1458,7 +1459,7 @@ check_curl () {
 
 	oIFS="$IFS"
 	IFS=.
-	set -- $(curl -V | awk '{print $2;exit}')
+	set -- $(curl -V | $awk '{print $2;exit}')
 	if [ "$1" -lt 7 ] || [ "$1" -eq 7 ] && [ "$2" -lt 26 ];then
 		die "Need at least curl 7.26.0."
 	fi
