@@ -109,6 +109,10 @@ shell script.
 
 Path to the awk binary. Defaults to awk.
 
+### sed
+
+Path to the sed binary. Defaults to sed.
+
 ### limit
 
 How many tweets should be shown in timeline. Defaults to 20.

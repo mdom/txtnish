@@ -33,6 +33,7 @@ ipfs_gateway=http://localhost:8080
 nick="${USER}"
 sync_followings=""
 awk=awk
+sed=sed
 # sync_followings="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt"
 timeout=0
 verbose=0
@@ -980,10 +981,10 @@ reply () {
 		# Those lines will not be tweeted.
 		
 EOF
-	timeline "$@" | sed -e 's/^/# /' -e 's/^# $//' >> "$draft_file"
+	timeline "$@" | $sed -e 's/^/# /' -e 's/^# $//' >> "$draft_file"
 	$editor "$draft_file"
 	tempfile="$draft_file.$$"
-	sed -e '/^# /d' -e '/^[[:space:]]*$/d' "$draft_file" > "$tempfile"
+	$sed -e '/^# /d' -e '/^[[:space:]]*$/d' "$draft_file" > "$tempfile"
 	mv "$tempfile" "$draft_file"
 	draft_to_twtfile
 }
