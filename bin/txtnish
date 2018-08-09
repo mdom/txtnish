@@ -702,7 +702,7 @@ process_stat_log () {
 		stderr = "cat >&2"
 	}
 	{
-		match($file, /[^/]+.txt$/)
+		match($file, /[^\/]+.txt$/)
 		nick = substr($file,RSTART,RLENGTH - 4 )
 		location = get_location($file)
 		if ( location && following[nick] != location ) {
