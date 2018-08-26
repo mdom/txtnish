@@ -9,7 +9,7 @@ TAB=$(printf "\t")
 ###################
 
 limit=20
-formatter="fmt"
+formatter="fold -s"
 use_pager=1
 use_color=1
 always_update=1
@@ -257,14 +257,6 @@ format_msg_html () {
 }
 
 format_msg () {
-
-	if ! have_cmd "${formatter%% *}";then
-		if have_cmd fold; then
-			formatter="fold -s"
-		else
-			formatter=cat
-		fi
-	fi
 
 	export color_nick color_time color_hashtag color_mention use_color formatter
 	$awk '

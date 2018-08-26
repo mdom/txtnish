@@ -120,7 +120,7 @@ How many tweets should be shown in timeline. Defaults to 20.
 ### formatter
 
 Defined which command is used to wrap each tweet to fit on the screen. It
-defaults to `fmt`, but will fall back to either `fold -s` or `cat`.
+defaults to `fold -s`.
 
 ### sort_order
 
