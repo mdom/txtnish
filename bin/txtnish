@@ -467,7 +467,9 @@ normalize_tweets () {
 			$0=$0
 
 			## remove escape sequences
-			gsub(/[^[:print:][:space:]]/,"")
+			## the trailing hyphen is important:
+			## https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=214783
+			gsub(/[^[:print:][:space:]-]/,"")
 
 			#normlize timestamp
 			sub(/Z$/,"+00:00",$4)
