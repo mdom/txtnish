@@ -59,6 +59,10 @@ mail_password=""
 # timestamps defaults
 last_timeline=0
 
+if [ -n "${NO_COLOR+1}" ];then
+    use_color=0
+fi
+
 ######################
 ## Runtime variables #
 ######################
