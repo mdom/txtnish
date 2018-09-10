@@ -1087,7 +1087,24 @@ timeline () {
 	done | display_tweets
 }
 
+update_metadata () {
+	tempfile="$twtfile.$$"
+	{
+		printf "# client = txtnish/$VERSION\n"
+		if [ "$sign_twtfile" -eq 1 ];then
+			gpgconf --list-options gpg \
+			| awk -F: '$1 == "default-key" {print substr($10,2)}' \
+			| xargs gpg --fingerprint \
+			| awk '/Key fingerprint = / { print "# gpg_fingerprint = " substr($0,25) }'
+		fi
+		following | while read line; do printf "# following = %s\n" "$line" ;done
+		grep -v -e '^#' "$twtfile"
+	} > "$tempfile"
+	mv "$tempfile" "$twtfile"
+}
+
 publish () {
+	update_metadata
 	if [ "$ipfs_publish" -eq 1 ] && have_cmd ipfs;then
 		_ipfs_path="$twtfile"
 		if [ "$ipfs_wrap_with_dir" -eq 1 ];then
