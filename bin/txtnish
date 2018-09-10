@@ -38,6 +38,7 @@ sed=sed
 timeout=0
 verbose=0
 force=0
+add_metadata=0
 
 http_proxy=""
 https_proxy=""
@@ -1088,6 +1089,7 @@ timeline () {
 }
 
 update_metadata () {
+    [ "$add_metadata" -eq 0 ] && return
 	tempfile="$twtfile.$$"
 	{
 		printf "# client = txtnish/$VERSION\n"

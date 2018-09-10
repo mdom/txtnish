@@ -105,6 +105,10 @@ shell script.
 
 ## General
 
+### add\_metadata
+
+Add metadata to twtxt file. Default to 0 (false).
+
 ### awk
 
 Path to the awk binary. Defaults to awk.
@@ -122,7 +126,7 @@ How many tweets should be shown in timeline. Defaults to 20.
 Defined which command is used to wrap each tweet to fit on the screen. It
 defaults to `fold -s`.
 
-### sort_order
+### sort\_order
 
 How to sort tweets. This option can be either *ascending* or
 *descending*. ascending prints the oldest tweet first, descending the
