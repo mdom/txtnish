@@ -921,7 +921,26 @@ unfollow () {
 }
 
 following () {
-	if [ -e "$follow_file" ];then
+    if [ -n "$1" ]; then
+        maybe_update "$@"
+        export cache_dir follow_file
+        printf "%s\n" "$@" | $awk '
+            BEGIN {
+                follow_file = ENVIRON["follow_file"]
+                while ( ( getline < follow_file ) > 0 )
+                    followings[$1] = $2
+                close(follow_file)
+            }
+            {
+                if ( followings[$1] ) {
+                    twtfile = ENVIRON["cache_dir"] "/twtfiles/" $1 ".txt"
+                    while ( (getline < twtfile ) > 0 )
+                        if ( /^#/ && $2 == "following" )
+                            print $4 " " $5
+                }
+            }
+        ' | sort | uniq
+	elif [ -e "$follow_file" ];then
 		cat "$follow_file"
 	fi
 }
