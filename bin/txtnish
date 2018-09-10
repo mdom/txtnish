@@ -1092,7 +1092,12 @@ update_metadata () {
     [ "$add_metadata" -eq 0 ] && return
 	tempfile="$twtfile.$$"
 	{
-		printf "# client = txtnish/$VERSION\n"
+		printf "# %s = %s\n" \
+            client "txtnish/$VERSION" \
+            nick "$nick"
+        if [ -n "$twturl" ]; then
+            printf "# %s = %s\n" twturl "$twturl"
+        fi
 		if [ "$sign_twtfile" -eq 1 ];then
 			gpgconf --list-options gpg \
 			| awk -F: '$1 == "default-key" {print substr($10,2)}' \
