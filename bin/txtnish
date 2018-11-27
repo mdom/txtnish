@@ -1180,11 +1180,12 @@ quickstart () {
 		fi
 
 		if ! [ -e "$config_file" ] && yesno "Import settings from twtxt?" ;then
-			nick=$(twtxt config get nick)
-			twturl=$(twtxt config get twturl)
-			limit=$(twtxt config get limit_timeline)
-			twtfile=$(twtxt config get twtfile)
-			sort_order=$(twtxt config get sorting)
+			nick=$(twtxt config twtxt.nick)
+			twturl=$(twtxt config twtxt.twturl)
+			limit=$(twtxt config twtxt.limit_timeline)
+			twtfile=$(twtxt config twtxt.twtfile)
+			sort_order=$(twtxt config twtxt.sorting)
+			disclose_identity=$(twtxt config twtxt.disclose_identity)
 
 			{
 				[ -n "$nick" ]       && printf "nick=%s\n"       "$nick"
@@ -1192,6 +1193,7 @@ quickstart () {
 				[ -n "$limit" ]      && printf "limit=%s\n"      "$limit"
 				[ -n "$twtfile" ]    && printf "twtfile=%s\n"    "$twtfile"
 				[ -n "$sort_order" ] && printf "sort_order=%s\n" "$sort_order"
+				[ -n "$disclose_identity" ] && printf "disclose_identity=%s\n" "$disclose_identity"
 
 			} > "$config_file"
 		fi
