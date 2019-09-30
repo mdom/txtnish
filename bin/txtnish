@@ -612,10 +612,16 @@ expand_mentions () {
 			OFS=FS
 		}
 		{
-			## TODO Bruteforcing, replace with something sane in the future
-			for ( nick in nicks ) {
-				gsub("@" nick, "@<" nick " " nicks[nick] ">", $2)
+			buffer = $2
+			$2 = ""
+			while ( match(buffer, /@[[:alnum:]_-]+/) > 0 ) {
+				nick = substr(buffer,RSTART+1,RLENGTH-1)
+				if ( nick in nicks ) {
+					$2 = $2 substr(buffer,0,RSTART - 1) "@<" nick " " nicks[nick] ">"
+				}
+				buffer = substr(buffer,RSTART+RLENGTH)
 			}
+			$2 = $2 buffer
 			print
 		}
 	'
