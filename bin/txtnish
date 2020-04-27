@@ -612,16 +612,23 @@ expand_mentions () {
 			OFS=FS
 		}
 		{
-			buffer = $2
-			$2 = ""
-			while ( match(buffer, /@[[:alnum:]_-]+/) > 0 ) {
-				nick = substr(buffer,RSTART+1,RLENGTH-1)
-				if ( nick in nicks ) {
-					$2 = $2 substr(buffer,0,RSTART - 1) "@<" nick " " nicks[nick] ">"
+			expanded_line = ""
+			while ( match($2, /@[[:alnum:]_-]+/ )) {
+				expanded_line = expanded_line substr($2,1,RSTART-1)
+				nick = substr($2,RSTART+1,RLENGTH-1)
+				rest = substr($2,RSTART+RLENGTH)
+				prev = substr($2,RSTART-1,1);
+				expand = nick in nicks && (RSTART == 1 || match(prev, /[[:space:]]/))
+				if (expand) {
+					expanded_line = expanded_line "@<" nick " " nicks[nick] ">"
 				}
-				buffer = substr(buffer,RSTART+RLENGTH)
+				else {
+					expanded_line = expanded_line "@" nick
+				}
+				$2 = rest
 			}
-			$2 = $2 buffer
+			expanded_line = expanded_line $2
+			$2 = expanded_line
 			print
 		}
 	'
