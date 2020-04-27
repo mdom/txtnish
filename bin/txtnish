@@ -901,7 +901,7 @@ follow () {
 		END {
 			print nick, url
 		}
-	' "$follow_file" > "$tempfile" && mv "$tempfile" "$follow_file"
+	' "$follow_file" > "$tempfile" && mv "$tempfile" "$follow_file" && info "You're now following $1."
 }
 
 unfollow () {
@@ -930,7 +930,7 @@ unfollow () {
 				printf "You are not following %s.\n", unfollow[idx] | stderr
 			}
 		}
-	' < "$follow_file" > "$tempfile" && mv "$tempfile" "$follow_file"
+	' < "$follow_file" > "$tempfile" && mv "$tempfile" "$follow_file" && info "You're not following $* anymore."
 }
 
 following () {
