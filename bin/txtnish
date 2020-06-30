@@ -264,7 +264,7 @@ format_msg_html () {
 format_msg () {
 
 	export color_nick color_time color_hashtag color_mention use_color formatter
-	$awk '
+	$awk -vtheme="$1" '
 		function colors_to_escape ( color,  fgc, bgc, n, c, attr ) {
 			n = split(color,c,/ /)
 			for (i=1; i<=n; i++ ) {
@@ -357,11 +357,15 @@ format_msg () {
 			gsub(/@[[:alnum:]_-]+/, color_mention "&" reset, msg)
 		}
 		fmt = ENVIRON["formatter"]
-		printf "* %s (%s)", nick, ts
-		if ( props )  printf " [%s]", props
-		printf "\n"
-		print msg | fmt
-		close(fmt)
+		if ( theme == "oneline" ) {
+			printf "* %s (%s) %s\n", nick, ts, msg
+		} else {
+			printf "* %s (%s)", nick, ts
+			if ( props )  printf " [%s]", props
+			printf "\n"
+			print msg | fmt
+			close(fmt)
+		}
 	}'
 }
 
@@ -449,6 +453,7 @@ display_tweets () {
 		raw ) normalize_tweets | filter_tweets | sort_tweets ;;
 		html ) normalize_tweets | filter_tweets | sort_tweets | format_msg_html ;;
 		default ) normalize_tweets | filter_tweets | sort_tweets | collapse_mentions | format_msg| maybe_pager ;;
+		oneline ) normalize_tweets | filter_tweets | sort_tweets | collapse_mentions | format_msg "oneline" | maybe_pager ;;
 		* ) die "Unknown theme $theme." ;;
 	esac
 }
