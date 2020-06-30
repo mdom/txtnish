@@ -358,7 +358,7 @@ format_msg () {
 		}
 		fmt = ENVIRON["formatter"]
 		if ( theme == "oneline" ) {
-			printf "* %s (%s) %s\n", nick, ts, msg
+			printf "* %s (%s %s)\n", msg, nick, ts
 		} else {
 			printf "* %s (%s)", nick, ts
 			if ( props )  printf " [%s]", props
@@ -1004,6 +1004,18 @@ tweet () {
 	draft_to_twtfile
 }
 
+ui () {
+	export FZF_DEFAULT_COMMAND="txtnish timeline -l 200 --theme=oneline 2>/dev/null"
+	fzf \
+		--exact \
+		--ansi \
+		--no-sort \
+		--bind="ctrl-t:execute(txtnish tweet)+reload($FZF_DEFAULT_COMMAND),ctrl-u:reload($FZF_DEFAULT_COMMAND),enter:ignore" \
+		--header 'Help: ctrl-u:Update ctrl-t:Tweet ctrl-q:Quit' \
+		--preview="echo {} | $formatter" --preview-window=down:10% \
+		--layout=reverse
+}
+
 reply () {
 	use_pager=0
 	use_color=0
@@ -1452,6 +1464,7 @@ usage_main () {
 		    sync-followings Sync followings from remote file.
 		    mail            Send new tweets per mail.
 		    url             Share urls
+		    ui              Start fzf based user-interface (experimental).
 
 		  Options:
 		    -h, --help      Print a help message and exit.
@@ -1618,6 +1631,10 @@ main() {
 			synopsis="Display timeline."
 			arguments="[NICK...]"
 			options="help,limit,verbose,ascending,descending,update,no-update,max-procs,search,pager,no-pager,raw,theme,timeout"
+			;;
+		ui )
+			synopsis="Start fzf based user-interface (experimental)."
+			options="help,verbose"
 			;;
 		reply )
 			synopsis="Reply to tweets."
