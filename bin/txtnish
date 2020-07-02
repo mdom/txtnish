@@ -687,6 +687,12 @@ post_tweet_hook () {
 
 process_stat_log () {
 	tempfile="$follow_file.$$"
+
+	## Remove dos line endings before reading twtfiles
+	for file in "$cache_dir"/twtfiles/*.txt;do
+		sed 's/$//' "$file" > "$file~" && mv "$file~" "$file"
+	done
+
 	$awk '
 
 	function get_location (file,   line, meta) {
