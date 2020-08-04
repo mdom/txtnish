@@ -238,12 +238,20 @@ format_msg_html () {
 		{
 			nick=$1;url=$2;props=$3;ts=$4;msg=$5
 			seconds=now-ts
-			if ( seconds >  86400 ) {
+			if ( seconds >= 172800 ) {
 				ts = int(seconds / 86400) " days ago"
-			} else if ( seconds > 3600 ) {
+			} else if ( seconds >= 86400 ) {
+				ts = "1 day ago"
+			} else if ( seconds >= 7200 ) {
 				ts = int(seconds / 3600) " hours ago"
-			} else if ( seconds > 60 ) {
+			} else if ( seconds >= 3600 ) {
+				ts = "1 hour ago"
+			} else if ( seconds >= 120 ) {
 				ts = int(seconds / 60) " minutes ago"
+			} else if ( seconds >= 60 ) {
+				ts = "1 minute ago"
+			} else if ( seconds == 1 ) {
+				ts = "1 second ago"
 			} else {
 				ts = seconds " seconds ago"
 			}
@@ -325,12 +333,20 @@ format_msg () {
 	{
 		nick=$1;url=$2;props=$3;ts=$4;msg=$5
 		seconds=now-ts
-		if ( seconds >  86400 ) {
+		if ( seconds >= 172800 ) {
 			ts = int(seconds / 86400) " days ago"
-		} else if ( seconds > 3600 ) {
+		} else if ( seconds >= 86400 ) {
+			ts = "1 day ago"
+		} else if ( seconds >= 7200 ) {
 			ts = int(seconds / 3600) " hours ago"
-		} else if ( seconds > 60 ) {
+		} else if ( seconds >= 3600 ) {
+			ts = "1 hour ago"
+		} else if ( seconds >= 120 ) {
 			ts = int(seconds / 60) " minutes ago"
+		} else if ( seconds >= 60 ) {
+			ts = "1 minute ago"
+		} else if ( seconds == 1 ) {
+			ts = "1 second ago"
 		} else {
 			ts = seconds " seconds ago"
 		}
