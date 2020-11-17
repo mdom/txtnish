@@ -565,7 +565,7 @@ normalize_tweets () {
 }
 
 gpg_verify () {
-	$gpg_bin --status-fd=1 --no-verbose --quiet --batch --verify "$1" 2>/dev/null
+	"$gpg_bin" --status-fd=1 --no-verbose --quiet --batch --verify "$1" 2>/dev/null
 }
 
 collapse_mentions () {
@@ -1110,7 +1110,7 @@ timeline () {
 	maybe_update "$@";
 
 	have_gpg=0
-	if have_cmd $gpg_bin ;then
+	if have_cmd "$gpg_bin" ;then
 		have_gpg=1
 	fi
 
@@ -1175,7 +1175,7 @@ update_metadata () {
 		if [ "$sign_twtfile" -eq 1 ];then
 			gpgconf --list-options gpg \
 			| awk -F: '$1 == "default-key" {print substr($10,2)}' \
-			| xargs $gpg_bin --fingerprint \
+			| xargs "$gpg_bin" --fingerprint \
 			| awk '/Key fingerprint = / { print "# gpg_fingerprint = " substr($0,25) }'
 		fi
 		following | while read line; do printf "# following = %s\n" "$line" ;done
@@ -1205,7 +1205,7 @@ publish () {
 		if [ -n "$sign_user" ]; then
 			signopt="-u $sign_user"
 			# for security, echo this
-			echo "Signing as $sign_user."
+			printf "Signing as %s.\n" "$sign_user"
 		else
 			unset signopt
 		fi
@@ -1214,14 +1214,14 @@ publish () {
 		else
 			die "Can't create temporary dir $tempdir"
 		fi
-		if $gpg_bin --clearsign $signopt --output "$tempdir/${twtfile##*/}" "$twtfile";then
+		if "$gpg_bin" --clearsign $signopt --output "$tempdir/${twtfile##*/}" "$twtfile";then
 			twtfile="$tempdir/${twtfile##*/}"
 		else
 			die "Can't sign twtfile. Exiting";
 		fi
 	fi
 	if [ -n "$scp_user" ] && [ -n "$scp_host" ];then
-		if [ $sftp_over_scp -eq 1 ]; then
+		if [ "$sftp_over_scp" -eq 1 ]; then
 			sftp "$scp_user@$scp_host" <<-EOF
 				put "$twtfile" "${scp_remote_name:-${twtfile##*/}}"
 EOF

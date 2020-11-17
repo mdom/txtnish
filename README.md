@@ -200,8 +200,7 @@ print a message indicating an override is in place.
 
 ### gpg_bin
 
-Set custom name of gpg executable, might be useful if your system defaults
-to the 1.x branch of gpg but keys you use or verify require gpg 2.x.
+Sets custom name of gpg executable.
 
 ### ipfs_gateway
 
@@ -226,8 +225,7 @@ Name of twtfile on remote host. Defaults to the basename of the twtfile.
 
 ### sftp_over_scp
 
-Will use SFTP instead of SCP if set to 1, might be useful for the hosts
-that refuse SCP protocol access.
+Use SFTP instead of SCP if set to 1.
 
 ## Publish with ftp
 
