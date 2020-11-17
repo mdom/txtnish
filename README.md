@@ -193,6 +193,16 @@ a *TAB* are not allowed by a strict reading of the spec.
 
 Verify pgp signatures and show the result in the timeline if set to 1. Defaults to 0.
 
+### sign_user
+
+Sets a different local user to sign twtfile than what is the default. It will
+print a message indicating an override is in place.
+
+### gpg_bin
+
+Set custom name of gpg executable, might be useful if your system defaults
+to the 1.x branch of gpg but keys you use or verify require gpg 2.x.
+
 ### ipfs_gateway
 
 When you subscribe to an `ipns://` address, txtnish will call this gateway to get
@@ -213,6 +223,11 @@ Copy twtfile to this host. Required to publish with scp.
 ### scp_remote_name
 
 Name of twtfile on remote host. Defaults to the basename of the twtfile.
+
+### sftp_over_scp
+
+Will use SFTP instead of SCP if set to 1, might be useful for the hosts
+that refuse SCP protocol access.
 
 ## Publish with ftp
 
