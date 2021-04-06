@@ -267,7 +267,7 @@ format_msg_html () {
 format_msg () {
 
 	export color_nick color_time color_hashtag color_mention use_color formatter
-	$awk -vtheme="$1" '
+	$awk -v theme="$1" '
 		function colors_to_escape ( color,  fgc, bgc, n, c, attr ) {
 			n = split(color,c,/ /)
 			for (i=1; i<=n; i++ ) {
