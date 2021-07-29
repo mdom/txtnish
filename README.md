@@ -1,6 +1,10 @@
 # txtnish
 A twtxt client with minimal dependencies
 
+# Unmaintained
+
+I haven't used txtnish for a long time now, so it's probably time to archive this project. Sorry.
+
 # Synopsis
 
 ```sh
